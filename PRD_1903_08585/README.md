@@ -1,4 +1,4 @@
-# GW_turbulence/PRD_1903_08585
+# cosmoGW/PRD_1903_08585
 
 The run directories correspond to the runs in Table 1 of the paper A. Roper Pol, S. Mandal, A. Brandenburg,
 T. Kahniashvili, & A. Kosowsky, *Numerical Simulations of Gravitational Waves from Early-Universe

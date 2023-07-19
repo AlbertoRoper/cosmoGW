@@ -8,12 +8,12 @@ literature.
 
 The runs correspond to Pencil Code simulations of gravitational waves from
 different sources in the early universe, for example, from MHD turbulence,
-see GW_turbulence project (https://github.com/AlbertoRoper/GW_turbulence)
+see cosmoGW project (https://github.com/AlbertoRoper/cosmoGW)
 for details.
 
 Author: Alberto Roper Pol
 Created: 01/01/2021
-Updated: 29/05/2022 (new release of the cosmoGW code)
+Updated: 20/07/2023 (release of the cosmoGW code)
 """
 
 import os
@@ -662,66 +662,6 @@ class run():
                 self.spectra.update({P_sp: PP})
                 self.spectra.update({'t_' + P_sp: t})
                 self.spectra_avail.append(P_sp)
-
-        # obsolete (to be deleted)
-        #if 'EGW' in self.spectra_avail and 'helEGW' in self.spectra_avail:
-        #    EGW = self.spectra.get('EGW')
-        #    helEGW = self.spectra.get('helEGW')
-        #    t = self.spectra.get('t_helEGW')*1
-        #    PGW = np.zeros((np.shape(EGW)))
-        #    good = np.where(EGW != 0)
-        #    PGW[good] = helEGW[good]/EGW[good]
-        #    self.spectra.update({'PGW': PGW})
-        #    self.spectra.update({'t_PGW': t})
-        #    if 'PGW' not in self.spectra_avail:
-        #        self.spectra_avail.append('PGW')
-        #if 'GWh' in self.spectra_avail and 'helGWh' in self.spectra_avail:
-        #    GWh = self.spectra.get('GWh')
-        #    helGWh = self.spectra.get('helGWh')
-        #    t = self.spectra.get('t_helGWh')*1
-        #    Ph = np.zeros((np.shape(GWh)))
-        #    good = np.where(GWh != 0)
-        #    Ph[good] = helGWh[good]/GWh[good]
-        #    self.spectra.update({'Ph': Ph})
-        #    self.spectra.update({'t_Ph': t})
-        #    if 'Ph' not in self.spectra_avail:
-        #        self.spectra_avail.append('Ph')
-        #if 'mag' in self.spectra_avail and 'helmag' in self.spectra_avail:
-        #    EM = self.spectra.get('mag')
-        #    HM = self.spectra.get('helmag')
-        #    k = self.spectra.get('k')
-        #    t = self.spectra.get('t_helmag')
-        #    tij, kij = np.meshgrid(t, k, indexing='ij')
-        #    HkM = .5*kij*HM
-        #    self.spectra.update({'helmag_comp': HkM})
-        #    if 'helmag_comp' not in self.spectra_avail:
-        #        self.spectra_avail.append('helmag_comp')
-        #    PM = np.zeros((np.shape(EM)))
-        #    good = np.where(EM != 0)
-        #    PM[good] = HkM[good]/EM[good]
-        #    self.spectra.update({'PM': PM})
-        #    self.spectra.update({'t_PM': t})
-        #    if 'PM' not in self.spectra_avail:
-        #        self.spectra_avail.append('PM')
-        #if 'kin' in self.spectra_avail and 'helkin' in self.spectra_avail:
-        #    EK = self.spectra.get('kin')
-        #    HK = self.spectra.get('helkin')
-        #    k = self.spectra.get('k')
-        #    t = self.spectra.get('t_helkin')
-        #    tij, kij = np.meshgrid(t, k, indexing='ij')
-        #    good = np.where(kij != 0)
-        #    HkK = .5*HK
-        #    HkK[good] = HkK[good]/kij[good]
-        #    self.spectra.update({'helkin_comp': HkK})
-        #    if 'helkin_comp' not in self.spectra_avail:
-        #        self.spectra_avail.append('helkin_comp')
-        #    PK = np.zeros((np.shape(EK)))
-        #    good = np.where(EK != 0)
-        #    PK[good] = HkK[good]/EK[good]
-        #    self.spectra.update({'PK': PK})
-        #    self.spectra.update({'t_PK': t})
-        #    if 'PK' not in self.spectra_avail:
-        #        self.spectra_avail.append('PK')
 
     def min_max_stat(self, abs_b=True, sp='GWs', indt=0, indtf=-1,
                      plot=False, hel=False):

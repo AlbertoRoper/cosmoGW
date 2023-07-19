@@ -23,7 +23,8 @@ import astropy.units as u
 dir0 = os.getcwd() + '/'
 HOME = dir0 + '/..'
 # create directory to store plots
-os.mkdir('plots')
+if not os.path.exists('plots'):
+    os.mkdir('plots')
 
 os.chdir(HOME)
 import plot_sets

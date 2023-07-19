@@ -2,7 +2,7 @@
 * Created: 19/07/2023
 * Latest stable release:
 
-cosmoGW (an updated version of [*GW_turbulence*](https://github.com/AlbertoRoper/GW_turbulence)) is a project to produce results related to the production of cosmological gravitational wave backgrounds from different sources in the early Universe (e.g., from MHD turbulence).
+cosmoGW (a continuation and update of [*GW_turbulence*](https://github.com/AlbertoRoper/GW_turbulence)) is a project to produce results related to the production of cosmological gravitational wave backgrounds from different sources in the early Universe (e.g., from MHD turbulence).
 
 Some of the routines use results from large-scale numerical simulations using the open-source [Pencil Code](https://github.com/pencil-code);
 see [Pencil Code Collaboration], *The Pencil Code, a modular MPI code for partial differential equations and particles: multipurpose and multiuser-maintained,* J. Open Source Softw. **6**, 2807 (2021), [arXiv:2009.08231](https://arxiv.org/abs/2009.08231), [DOI:10.21105/joss.02807](https://joss.theoj.org/papers/10.21105/joss.02807).

@@ -22,6 +22,8 @@ import astropy.units as u
 # get working directory, where the runs and routines should be stored
 dir0 = os.getcwd() + '/'
 HOME = dir0 + '/..'
+# create directory to store plots
+os.mkdir('plots')
 
 os.chdir(HOME)
 import plot_sets

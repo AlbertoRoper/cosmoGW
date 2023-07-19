@@ -42,10 +42,6 @@ Each specific project is contained in a separate directory and (usually) corresp
 > **A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili, A. Kosowsky,** *Numerical Simulations of Gravitational Waves from Early-Universe Turbulence,* Phys. Rev. D **102**, 083512 (2020), [arXiv:1903.08585](https://arxiv.org/abs/1903.08585),
 [DOI:10.1103/PhysRevD.102.083512](https://doi.org/10.1103/PhysRevD.102.083512).
 
-* The run directories and results in [**PRR_2011_05556**](PRR_2011_05556) (datasets are also available in [Zenodo](https://zenodo.org/record/4256906)) correspond to:
-> **T. Kahniashvili, A. Brandenburg, G. Gogoberidze, S. Mandal, A. Roper Pol,** *Circular polarization of gravitational waves from early-Universe helical turbulence,* Phys. Rev. Research **3**, 013193 (2021), [arXiv:2011.05556](https://arxiv.org/abs/2011.05556),
-[DOI:10.1103/PhysRevResearch.3.013193](https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.3.013193).
-
 * The run directories and results in [**JCAP_2107_05356**](JCAP_2107_05356) (datasets are also available in [Zenodo](https://zenodo.org/record/5525504)) correspond to:
 > **A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,** *Polarization of gravitational waves from helical MHD turbulent sources,*
 *JCAP* **04** (2022), 019, [arXiv:2107.05356](https://arxiv.org/abs/2107.05356).

@@ -58,7 +58,7 @@ Phys. Rev. D*, [arXiv:2110.14456](https://arxiv.org/abs/2110.14456) (2021).
 > **A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz,** *The gravitational wave signal from primordial magnetic fields in the Pulsar
 Timing Array frequency band,* Phys. Rev. D **105**, 123502 (2022), [arXiv:2201.05630](https://arxiv.org/abs/2201.05630).
 
-* The run directories and results in [**horndeski**](horndeski) (datasets are also available in
+* The run directories and results in [**JCAP_2212_06082**](JCAP_2212_06082) (datasets are also available in
 [Zenodo](https://zenodo.org/record/7408601)) correspond to:
 > **Y. He, A. Roper Pol, A. Brandenburg,** *Modified propagation of gravitational waves from the early radiation era,*
-*in press, JCAP* (2023), [arXiv:2212.06082](https://arxiv.org/abs/2212.06082).
+*JCAP* **06** (2023), 025, [arXiv:2212.06082](https://arxiv.org/abs/2212.06082).

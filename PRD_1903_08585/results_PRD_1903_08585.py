@@ -11,7 +11,7 @@ Phys. Rev. D 102, 083512 (2020), https://arxiv.org/abs/1903.08585.
 
 Author: Alberto Roper Pol
 Created: 01/11/2021
-Updated: 20/07/2023 (new release of the cosmoGW code)
+Updated: 05/09/2023 (new release of the cosmoGW code)
 """
 
 import os
@@ -22,16 +22,18 @@ import astropy.units as u
 # get working directory, where the runs and routines should be stored
 dir0 = os.getcwd() + '/'
 HOME = dir0 + '/..'
+
 # create directory to store plots
-if not os.path.exists('plots'):
+try:
     os.mkdir('plots')
+except:
+    aa_tst = 1
 
 os.chdir(HOME)
 import plot_sets
 import run as r
 import interferometry as inte
 import cosmoGW
-import spectra as sp
 os.chdir(dir0)
 
 # reference values and constants
@@ -43,8 +45,8 @@ T_PLS = 4           # LISA PLS
 def correct_ini1_3(runs):
 
     """
-    Function that corrects the wrong normalization factor in old Pencil Code
-    runs ini1, ini2, and ini3.
+    Function that corrects the wrong normalization factor in runs ini1, ini2,
+    and ini3.
     """
 
     rrs = ['ini1', 'ini2', 'ini3']
@@ -354,6 +356,7 @@ def plot_OmGW_hc_vs_f_ini(runs, T=Tref, g=gref, SNR=SNR_PLS, Td=T_PLS,
     if save: plt.savefig('plots/hc_vs_f_ini.pdf', bbox_inches='tight')
     if not show: plt.close()
 
+
 def plot_OmGW_hc_vs_f_driven(runs, T=Tref, g=gref, SNR=SNR_PLS, Td=T_PLS,
                              save=True, show=True):
 
@@ -498,138 +501,6 @@ def plot_OmGW_hc_vs_f_driven(runs, T=Tref, g=gref, SNR=SNR_PLS, Td=T_PLS,
     if save: plt.savefig('plots/hc_vs_f_driven.pdf', bbox_inches='tight')
     if not show: plt.close()
     
-def plot_OmGW_hc_vs_f_ini(runs, T=1e5*u.MeV, g=100, SNR=10, Td=4,
-                             save=True, show=True):
-
-    """
-    Function that generates the plot of the GW energy density spectrum
-    of initial runs (ini1, ini2, and ini3), compared to the LISA sensitivity
-    and power law sensitivity (PLS).
-
-    It corresponds to figure 4 of A. Roper Pol, S. Mandal, A. Brandenburg,
-    T. Kahniashvili, and A. Kosowsky, "Numerical simulations of gravitational
-    waves from early-universe turbulence," Phys. Rev. D 102, 083512 (2020),
-    https://arxiv.org/abs/1903.08585.
-
-    Arguments:
-        runs -- dictionary that includes the run variables
-        T -- temperature scale (in natural units) at the time of turbulence
-             generation (default 100 GeV, i.e., electroweak scale)
-        g -- number of relativistic degrees of freedom at the time of
-             turbulence generation (default 100, i.e., electroweak scale)
-        SNR -- signal-to-noise ratio (SNR) of the resulting PLS (default 10)
-        Td -- duration of the mission (in years) of the resulting PLS
-             (default 4)
-        save -- option to save the resulting figure as
-                plots/OmGW_vs_f_ini.pdf (default True)
-        show -- option to show the resulting figure (default True)
-    """
-
-    # read LISA and Taiji sensitivities
-    CWD = os.getcwd()
-    os.chdir('..')
-    #f_LISA, f_LISA_Taiji, LISA_sensitivity, LISA_OmPLS, LISA_XiPLS, \
-    #       Taiji_OmPLS, Taiji_XiPLS, LISA_Taiji_XiPLS = inte.read_sens()
-    fs, LISA_Om, LISA_OmPLS = inte.read_sens(SNR=SNR, T=Td)
-    fs = fs*u.Hz
-    os.chdir(CWD)
-
-    # chose the runs to be shown
-    rrs = ['ini1', 'ini2', 'ini3']
-    # chose the colors of each run
-    col = ['black', 'red', 'blue']
-
-    plt.figure(1, figsize=(12,5))
-    plt.figure(2, figsize=(12,5))
-
-    j = 0
-    for i in rrs:
-        run = runs.get(i)
-        k = run.spectra.get('k')[1:]
-        EGW_stat = run.spectra.get('EGW_stat_sp')
-        f, OmGW_stat = cosmoGW.shift_OmGW_today(k, EGW_stat*k, T, g)
-        OmGW_stat = np.array(OmGW_stat, dtype='float')
-        hc_stat = cosmoGW.hc_OmGW(f, OmGW_stat)
-        plt.figure(1)
-        plt.plot(f, OmGW_stat, color=col[j], lw=.8)
-        if i == 'ini1': plt.text(5e-2, 1.5e-15, i, color=col[j])
-        if i == 'ini2': plt.text(3e-2, 2e-17, i, color=col[j])
-        if i == 'ini3': plt.text(3e-3, 4e-17, i, color=col[j])
-        plt.figure(2)
-        plt.plot(f, hc_stat, color=col[j], lw=.8)
-        if i == 'ini1': plt.text(5e-2, 1.5e-24, i, color=col[j])
-        if i == 'ini2': plt.text(1e-2, 3e-24, i, color=col[j])
-        if i == 'ini3': plt.text(4e-3, 1e-24, i, color=col[j])
-        j += 1
-
-    plt.figure(1)
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlim(1e-4, 1e-1)
-    plt.ylim(1e-19, 1e-9)
-    plt.xlabel('$f$ [Hz]')
-    plt.ylabel(r'$h_0^2 \Omega_{\rm GW} (f)$')
-    #plt.plot(f_LISA, LISA_OmPLS, color='lime', ls='dashdot')
-    #plt.plot(f_LISA, LISA_sensitivity, color='lime')
-    plt.plot(fs, LISA_OmPLS, color='lime', ls='dashdot')
-    plt.plot(fs, LISA_Om, color='lime')
-
-    # plot f^(-8/3) line
-    fs0 = np.logspace(-2.1, -1.5, 5)
-    plt.plot(fs0, 3e-15*(fs0/2e-2)**(-8/3), color='black',
-             ls='dashdot', lw=.7)
-    plt.text(1e-2, 5e-16, '$\sim\!f^{-8/3}$')
-
-    # plot f line
-    fs0 = np.logspace(-3.45, -2.8, 5)
-    plt.plot(fs0, 2e-13*(fs0/1e-3)**(1), color='black',
-             ls='dashdot', lw=.7)
-    plt.text(4e-4, 3e-13, '$\sim\!f$')
-
-    ax = plt.gca()
-    ytics2 = 10**np.array(np.linspace(-19, -9, 11))
-    yticss = ['', '$10^{-18}$', '', '$10^{-16}$', '', '$10^{-14}$', '',
-              '$10^{-12}$', '', '$10^{-10}$', '']
-    ax.set_yticks(ytics2)
-    ax.set_yticklabels(yticss)
-    plot_sets.axes_lines()
-
-    if save: plt.savefig('plots/OmGW_vs_f_ini.pdf', bbox_inches='tight')
-    if not show: plt.close()
-
-    plt.figure(2)
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlim(1e-4, 1e-1)
-    plt.ylim(1e-25, 1e-20)
-    plt.xlabel('$f$ [Hz]')
-    plt.ylabel(r'$h_{\rm c}(f)$')
-
-    LISA_hc_PLS = cosmoGW.hc_OmGW(fs, LISA_OmPLS)
-    LISA_hc = cosmoGW.hc_OmGW(fs, LISA_Om)
-    plt.plot(fs, LISA_hc_PLS, color='lime', ls='dashdot')
-    plt.plot(fs, LISA_hc, color='lime')
-
-    # plot f^(-1/2) line
-    fs0 = np.logspace(-3.4, -2.6, 5)
-    plt.plot(fs0, 8e-22*(fs0/1e-3)**(-1/2), color='black',
-             ls='dashdot', lw=.7)
-    plt.text(8e-4, 1.5e-21, '$\sim\!f^{-1/2}$')
-
-    # plot f^(-7/3) line
-    fs0 = np.logspace(-2, -1.4, 5)
-    plt.plot(fs0, 1e-23*(fs0/2e-2)**(-7/3), color='black',
-             ls='dashdot', lw=.7)
-    plt.text(2e-2, 2e-23, '$\sim\!f^{-7/3}$')
-
-    ax = plt.gca()
-    ytics2 = 10**np.array(np.linspace(-25, -20, 6))
-    ax.set_yticks(ytics2)
-    plot_sets.axes_lines()
-
-    if save: plt.savefig('plots/hc_vs_f_ini.pdf', bbox_inches='tight')
-    if not show: plt.close()
-
 def plot_OmMK_OmGW_vs_t(runs, save=True, show=True):
 
     """
@@ -665,14 +536,14 @@ def plot_OmMK_OmGW_vs_t(runs, save=True, show=True):
     j = 0
     for i in rrs:
         run = runs.get(i)
-        k = run.spectra.get('k')
+        k = run.spectra.get('k')[1:]
+        EGW_stat = run.spectra.get('EGW_stat_sp')[1:]
         t = run.ts.get('t')[1:]
-        EEGW = run.ts.get('EEGW')[1:]
-        EEM = run.ts.get(run.type)[1:]
-        inds = np.argsort(t)
-        t = t[inds]
-        EEGW = EEGW[inds]
-        EEM = EEM[inds]
+        indst = np.argsort(t)
+        t = t[indst]
+        EEGW = run.ts.get('EEGW')[1:][indst]
+        if run.type == 'EEM': EEM = run.ts.get('EEM')[1:][indst]
+        if run.type == 'EEK': EEM = run.ts.get('EEK')[1:][indst]
 
         plt.figure(1)
         plt.plot(t, EEGW, color=col[j], lw=.8, ls=ls[j])
@@ -717,7 +588,7 @@ def plot_OmMK_OmGW_vs_t(runs, save=True, show=True):
 
     if save: plt.savefig('plots/OmM_vs_t.pdf', bbox_inches='tight')
     if not show: plt.close()
-
+    
 def plot_OmGW_vs_OmMK(runs, save=True, show=True):
 
     """
@@ -768,7 +639,7 @@ def plot_OmGW_vs_OmMK(runs, save=True, show=True):
     OmMs = np.logspace(-2.5, -1.7)
     plt.plot(OmMs, 1.5e-5*OmMs**2, color='red', ls='dashed', lw=.7)
     OmMs = np.logspace(-2.8, -1.8)
-    plt.plot(OmMs, 3e-4*OmMs**2, color='blue')
+    plt.plot(OmMs, 3.5e-4*OmMs**2, color='blue')
 
     plot_sets.axes_lines()
     plt.yticks([1e-11, 1e-10, 1e-9, 1e-8, 1e-7])
@@ -784,7 +655,7 @@ def plot_OmGW_vs_OmMK(runs, save=True, show=True):
 
     if save: plt.savefig('plots/OmGW_vs_OmMK.pdf', bbox_inches='tight')
     if not show: plt.close()
-
+    
 def plot_EGW_vs_k_initial_ts(runs, rr='ini2', save=True, show=True):
 
     """
@@ -805,12 +676,17 @@ def plot_EGW_vs_k_initial_ts(runs, rr='ini2', save=True, show=True):
                 plots/EGW_vs_k_initial_ts.pdf (default True)
         show -- option to show the resulting figure (default True)
     """
+    
+    import spectra as sp
 
     run = runs.get(rr)
     EGW = run.spectra.get('EGW')[:, 1:]
     k = run.spectra.get('k')[1:]
     t = run.spectra.get('t_GWs')
-    max_sp_EGW = run.spectra.get('EGW_max_sp')[1:]
+    EGW_av = run.spectra.get('EGW_integ')
+    ind_max = np.argmax(EGW_av)
+    tmax = t[ind_max]
+    max_sp_EGW = EGW[np.argmin(abs(t - tmax)), :]
 
     plt.figure(figsize=(10,6))
     plt.xscale('log')
@@ -820,12 +696,16 @@ def plot_EGW_vs_k_initial_ts(runs, rr='ini2', save=True, show=True):
     # initial time step GW spectrum
     plt.plot(k, EGW[0, :], color='black', lw=.7, ls='dashed')
     # local maximum amplitudes of oscillations at next time step
+    plt.plot(k, max_sp_EGW, color='grey', lw=.7, ls='dashed', alpha=.7)
     kmax, EGWmax = sp.local_max(k, EGW[1, :])
     plt.plot(kmax, EGWmax, color='black', lw=.7, ls='dashed')
     plt.plot(k[:10], EGW[1, :10], color='black', lw=.7, ls='dashed')
     # maximum over all times of the GW energy density (amplitude of the
     # oscillations)
-    plt.plot(k, max_sp_EGW, color='black', lw=1.5)
+    kmax, max_sp_EGW2 = sp.local_max(k, max_sp_EGW)
+    kks = np.append(k[np.where(k < 8e2)], kmax[np.where(kmax > 8e2)])
+    EGW_kks = np.append(max_sp_EGW[np.where(k < 8e2)], max_sp_EGW2[np.where(kmax > 8e2)])
+    plt.plot(kks, EGW_kks, color='black', lw=1.5)
     # 6th time step
     kmax, EGWmax = sp.local_max(k, EGW[5, :])
     plt.plot(kmax, EGWmax, color='black', lw=.7, ls='dashed')
@@ -877,8 +757,7 @@ def plot_efficiency(runs, save=True, show=True, sqrt=False):
 
     This plot is analogous to figure 10 of A. Roper Pol, S. Mandal,
     A. Brandenburg, and T. Kahniashvili, "Polarization of gravitational waves
-    from helical MHD turbulent sources", JCAP 04 (2022), 019,
-    https://arxiv.org/abs/2107.05356.
+    from helical MHD turbulent sources", https://arxiv.org/abs/2107.05356.
 
     Arguments:
         runs -- dictionary that includes the run variables
@@ -899,6 +778,7 @@ def plot_efficiency(runs, save=True, show=True, sqrt=False):
     plt.xlabel('$\delta t = t - 1$')
     plt.ylabel(r'$q^2 (t) = k_*^2\, \Omega_{\rm GW}$' + \
                r'$(t)/({\cal E}_{\rm M, K}^{\rm max})^2$')
+
     if sqrt:
         plt.ylabel(r'$q (t) = k_* \left[\Omega_{\rm GW} (t)\right]^{1/2}$' + \
                    r'$/{\cal E}_{\rm M, K}^{\rm max}$')
@@ -912,13 +792,13 @@ def plot_efficiency(runs, save=True, show=True, sqrt=False):
         run = runs.get(i)
         t = run.ts.get('t')
         EGW = run.ts.get('EEGW')
-        # nature of the source is given by the field that has its maximum
         ind_max = np.argmax(run.Om_max)
-        plt.plot(t-1, (EGW/run.Ommax**2*run.kf_max[ind_max]**2)**exp,
+        kf = run.kf_max[ind_max]
+        plt.plot(t-1, (EGW/run.Ommax**2*kf**2)**exp,
                  color=col)
 
     plot_sets.axes_lines()
-    plt.text(3e-1, 60**exp, 'acoustic', color='blue')
+    plt.text(3e-1, 70**exp, 'acoustic', color='blue')
     plt.text(3e-1, 1.5**exp, 'initial', color='green')
     plt.text(1.3e-1, 2.8**exp, r'helical 1--3', color='orange')
     plt.text(3e-1, 15**exp, 'helical 4', color='red')

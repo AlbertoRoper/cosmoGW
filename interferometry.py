@@ -5,7 +5,7 @@ to the detection of SGWB (see tutorial on interferometry/interferometry.ipynb).
 
 Author: Alberto Roper Pol
 Created: 01/05/2022
-Updated: 31/05/2023 for new release of cosmoGW, included tutorial
+Updated: 05/09/2023 for new release of cosmoGW, included tutorial
 
 Main reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
 "Polarization of gravitational waves from helical MHD turbulent sources,"

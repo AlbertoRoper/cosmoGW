@@ -4,7 +4,7 @@ cosmological stochastic gravitational wave backgrounds (SGWB).
 
 Author: Alberto Roper Pol
 Created: 01/12/2021
-Updated: 20/07/2023 (release of the cosmoGW code)
+Updated: 05/09/2023 for new release of cosmoGW
 """
 
 import astropy.constants as const

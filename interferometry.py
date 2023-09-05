@@ -1,11 +1,11 @@
 """
 interferometry.py is a Python routine that computes the response and
 sensitivity functions of interferometer space-based GW detectors, e.g., LISA and Taiji,
-to the detection of SGWB.
+to the detection of SGWB (see tutorial on interferometry/interferometry.ipynb).
 
 Author: Alberto Roper Pol
 Created: 01/05/2022
-Updated: 05/09/2023 (release of the cosmoGW code)
+Updated: 31/05/2023 for new release of cosmoGW, included tutorial
 
 Main reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
 "Polarization of gravitational waves from helical MHD turbulent sources,"
@@ -17,6 +17,7 @@ import astropy.units as u
 import numpy as np
 import os
 import pandas as pd
+import cosmology as co
 
 HOME = os.getcwd()
 dir0 = HOME + '/detector_sensitivity/'
@@ -30,14 +31,65 @@ P_Taiji = 8
 A_Taiji = 3
 SNR_PLS = 10
 T_PLS = 4
+v_dipole = 1.23e-3
 
-def read_sens(dir0=dir0, SNR=SNR_PLS, T=T_PLS, interf='LISA', Xi=False):
+# Reference f and beta arrays used in the calculations
+f_ref = np.logspace(-4, 0, 5000)*u.Hz
+beta_ref = np.linspace(-20, 20, 3000)
+
+################## SENSITIVITIES AND NOISE POWER SPECTRAL DENSITY ##################
+
+####### READING FUNCTIONS FROM FILES ON SENSITIVITY
+
+def read_response_LISA_Taiji(dir0=dir0, TDI=True, interf='LISA'):
+    
+    """
+    Function that reads the response functions of LISA and Taiji from the files
+    'dir0/LISA_response_f.csv' and 'dir0/Taiji_response_f.csv',
+    generated and saved in the routine 'compute_response_LISA_Taiji'.
+    
+    TDI chanels are defined following A. Roper Pol, S. Mandal, A. Brandenburg,
+    T. Kahniashvili, "Polarization of gravitational waves from helical MHD turbulent sources,"
+    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B.
+    
+    Arguments: 
+        dir0 -- directory where to save the results (default is 'detector_sensitivity')
+        TDI -- option to read the response functions for TDI chanels, instead of XYZ
+               chanels (default True)
+    """
+
+    if TDI:
+        df = pd.read_csv(dir0 + interf + '_response_f_TDI.csv')
+        fs = np.array(df['frequency'])
+        fs = fs*u.Hz
+        MAs = np.array(df['MA'])
+        MTs = np.array(df['MT'])
+        DAEs = np.array(df['DAE'])
+
+    else:
+        df = pd.read_csv(dir0 + interf + '_response_f_X.csv')
+        fs = np.array(df['frequency'])
+        fs = fs*u.Hz
+        MAs = np.array(df['MX'])
+        MTs = np.array(df['MXY'])
+        DAEs = np.array(df['DXY'])
+    
+    # Note that for interferometry channels we MA -> MX, MT -> MXY, DAE -> DXY
+
+    return fs, MAs, MTs, DAEs
+
+def read_sens(dir0=dir0, SNR=SNR_PLS, T=T_PLS, interf='LISA', Xi=False,
+              TDI=True, chan='A'):
 
     """
     Function that reads the sensitivity Omega (expressed as a GW energy
     density spectrum), and the power law sensitivity (PLS)
     of the interferometer chosen (options are 'LISA', 'Taiji', and the
     LISA-Taiji network 'comb').
+    
+    For LISA and Taiji the sensitivity can be given for each chanel X, Y,
+    Z or on the TDI chanels A=E, T (A chanel is the default option, and
+    the relevant for Omega sensitivity).
 
     Arguments:
         dir0 -- directory where the sensitivity files are stored
@@ -50,11 +102,16 @@ def read_sens(dir0=dir0, SNR=SNR_PLS, T=T_PLS, interf='LISA', Xi=False):
                   'muAres')
         Xi -- option to return the helical sensitivity and PLS (default False),
               available when 'LISA' or 'Taiji' interf are chosen
+        TDI -- option to compute sensitivity in TDI chanels A and T
+               (default True)
+        chan -- specific chanel (default 'A', other options are 'X', 'Y', 'Z' if no TDI,
+                and 'T' if TDI), only available for LISA and Taiji
 
     Returns:
         fs -- array of frequencies
         interf_Om -- sensitivity of the interferometer 'interf'
                      expressed as a GW energy density spectrum
+                     (can be given for different chanels, see above)
         interf_OmPLS --  PLS of the interferometer 'interf'
         interf_Xi -- helical sensitivity of the interferometer 'interf'
         interf_XiPLS -- helical PLS of the interferometer 'interf'
@@ -147,7 +204,72 @@ def read_detector_PLIS_Schmitz(dir0=dir0 + '/power-law-integrated_sensitivities/
 
     return f, Omega*frac
 
-def Poms_f(f, P=P_LISA, L=L_LISA):
+def read_MAC(dir0=dir0 + '/LISA_Taiji/', M='MAC', V='V'):
+
+    """
+    Function that reads the V response functions of the cross-correlated
+    TDI chanels of the LISA-Taiji network.
+
+    Argument:
+        dir0 -- directory where to save the results (default is
+                'detector_sensitivity/LISA_Taiji/')
+        M -- string of the channels to be read (options are default 'MAC',
+             'MAD', 'MEC', 'MED')
+        V -- can be changed to read the 'I' response function (default 'V')
+        
+    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+    "Polarization of gravitational waves from helical MHD turbulent sources,"
+    JCAP 04 (2022), 019, arXiv:2107.05356, figure 18.
+    
+    The data is taken from  G. Orlando, M. Pieroni, A. Ricciardone, "Measuring Parity Violation
+    in the Stochastic Gravitational Wave Background with the LISA-Taiji network,"
+    JCAP 03, 069 (2021), arXiv:2011.07059, Figure 2.
+    """
+
+    df = pd.read_csv(dir0 + M + '_' + V + '.csv')
+    f = np.array(df['f'])
+    MAC = np.array(df['M'])
+    inds = np.argsort(f)
+    f = f[inds]
+    MAC = MAC[inds]
+    f = f*u.Hz
+
+    return f, MAC
+
+def read_all_MAC(V='V'):
+    
+    """
+    Function that reads all relevant TDI cross-correlated response functions between LISA
+    and Taiji (AC, AD, EC, ED channels) using read_MAC.
+    
+    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+    "Polarization of gravitational waves from helical MHD turbulent sources,"
+    JCAP 04 (2022), 019, arXiv:2107.05356, figure 18.
+    
+    The data is taken from  G. Orlando, M. Pieroni, A. Ricciardone, "Measuring Parity Violation
+    in the Stochastic Gravitational Wave Background with the LISA-Taiji network,"
+    JCAP 03, 069 (2021), arXiv:2011.07059, Figure 2.
+    """
+    
+    f_AC, M_AC = read_MAC(M='MAC', V=V)
+    f_AD, M_AD = read_MAC(M='MAD', V=V)
+    f_EC, M_EC = read_MAC(M='MEC', V=V)
+    f_ED, M_ED = read_MAC(M='MED', V=V)
+    
+    min_f = np.max([np.min(f_AC.value), np.min(f_AD.value), np.min(f_EC.value), np.min(f_ED.value)])
+    max_f = np.min([np.max(f_AC.value), np.max(f_AD.value), np.max(f_EC.value), np.max(f_ED.value)])
+    
+    fs = np.logspace(np.log10(min_f), np.log10(max_f), 1000)*u.Hz
+    M_AC = np.interp(fs, f_AC, M_AC)*2
+    M_AD = np.interp(fs, f_AD, M_AD)*2
+    M_EC = np.interp(fs, f_EC, M_EC)*2
+    M_ED = np.interp(fs, f_ED, M_ED)*2
+    
+    return fs, M_AC, M_AD, M_EC, M_ED
+
+####### NOISE POWER SPECTRAL DENSITY FUNCTIONS FOR SPACE-BASED INTERFEROMETERS
+
+def Poms_f(f=f_ref, P=P_LISA, L=L_LISA):
 
     """
     Function that computes the power spectral density (PSD) of the optical
@@ -173,7 +295,7 @@ def Poms_f(f, P=P_LISA, L=L_LISA):
 
     return Poms
 
-def Pacc_f(f, A=A_LISA, L=L_LISA):
+def Pacc_f(f=f_ref, A=A_LISA, L=L_LISA):
 
     """
     Function that computes the power spectral density (PSD) of the mass
@@ -207,12 +329,14 @@ def Pacc_f(f, A=A_LISA, L=L_LISA):
 
     return Pacc
 
-def Pn_f(f, P=P_LISA, A=A_LISA, L=L_LISA):
+def Pn_f(f=f_ref, P=P_LISA, A=A_LISA, L=L_LISA, TDI=True):
 
     """
     Function that computes the noise power spectral density (PSD) of an
     interferometer channel X, Pn(f), and of the cross-correlation of two
     different interferometer channels XY, Pn_cross(f).
+    
+    It gives the A and T PSD of the TDI chanels if TDI is True (default)
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -220,57 +344,40 @@ def Pn_f(f, P=P_LISA, A=A_LISA, L=L_LISA):
         A -- noise parameter (default 3 for LISA)
         L -- length of the interferometer arm (default is L = 2.5e6 km for LISA,
              otherwise should be in units of km)
+        TDI -- option to compute PSD of TDI chanels, instead of XYZ
+               chanels (default True)
 
     Returns:
         Pn -- noise PSD
-        Pn_cross -- cross-correlation noise PSD
+        Pn_cross -- cross-correlation noise PSD (only if not TDI)
         
     Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
     "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.23 and B.26
+    JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.23, B.26 and B.27
     """
 
-    Poms = Poms_f(f, P=P, L=L)
-    Pacc = Pacc_f(f, A=A, L=L)
+    Poms = Poms_f(f=f, P=P, L=L)
+    Pacc = Pacc_f(f=f, A=A, L=L)
     c = const.c
     f0 = c/2/np.pi/L
     f_f0 = f.to(u.Hz)/f0.to(u.Hz)
 
     Pn = Poms + (3 + np.cos(2*f_f0.value))*Pacc
     Pn_cross = -.5*np.cos(f_f0.value)*(Poms + 4*Pacc)
+    
+    if TDI: 
+        PnA = 2*(Pn - Pn_cross)/3
+        PnT = (Pn + 2*Pn_cross)/3
+        return PnA, PnT
 
-    return Pn, Pn_cross
+    else:
+        return Pn, Pn_cross
 
-def Pn_TDI(f, P=P_LISA, A=A_LISA, L=L_LISA):
+############################ INTERFEROMETRY CALCULATIONS ############################
 
-    """
-    Function that computes the noise power spectral density (PSD) of the
-    interferometer channels A and T (Sagnac channel) of the TDI combination
-    of channels.
+##### ANALYTICAL FIT FOR LISA SENSITIVITY
 
-    Arguments:
-        f -- frequency array (should be in units of Hz)
-        P -- noise parameter (default 15 for LISA)
-        A -- noise parameter (default 3 for LISA)
-        L -- length of the interferometer arm (default is L = 2.5e6 km for LISA,
-             otherwise should be in units of km)
-
-    Returns:
-        PnA -- noise PSD of the TDI channel A
-        PnT -- noise PSD of the TDI channel T
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.27
-    """
-
-    PnX, PnXY = Pn_f(f, P=P, A=A, L=L)
-    PnA = 2*(PnX - PnXY)/3
-    PnT = (PnX + 2*PnXY)/3
-
-    return PnA, PnT
-
-def R_f(f, L=L_LISA):
+def R_f(f=f_ref, L=L_LISA):
 
     """
     Function that computes the analytical fit of the response function.
@@ -295,7 +402,7 @@ def R_f(f, L=L_LISA):
 
     return Rf
 
-def Sn_f(f, P=P_LISA, A=A_LISA, L=L_LISA):
+def Sn_f_analytical(f=f_ref, P=P_LISA, A=A_LISA, L=L_LISA):
 
     """
     Function that computes the strain sensitivity using the analytical fit
@@ -312,10 +419,12 @@ def Sn_f(f, P=P_LISA, A=A_LISA, L=L_LISA):
         Rf -- response function (using analytical fit)
     """
 
-    Pn = Pn_f(f, P=P, A=A, L=L)
-    Rf = R_f(f, L=L)
+    Pn = Pn_f(f=f, P=P, A=A, L=L)
+    Rf = R_f(f=f, L=L)
 
     return Pn/Rf
+
+###### NUMERICAL COMPUTATION OF RESPONSE FUNCTIONS
 
 def delta(a, b):
 
@@ -327,31 +436,45 @@ def delta(a, b):
     if a==b: return 1
     else: return 0
 
-def compute_interferometry(f, L=L_LISA):
+def compute_interferometry(f=f_ref, L=L_LISA, TDI=True, order=1, comp_all=False,
+                           comp_all_rel=True):
 
     """
-    Function that computes numerically the monopole and dipole response
-    functions of an interferometer channel of a space-based GW detector.
+    Function that computes numerically the monopole (or dipole if order = 2)
+    response functions of an interferometer channel of a space-based GW detector
+    using the interferometer channels (or TDI channels if TDI is True).
 
     Arguments:
         f -- frequency array (should be in units of Hz)
         L -- length of the interferometer arm (default is L = 2.5e6 km for LISA,
              otherwise should be in units of km)
+        TDI -- option to compute sensitivity in TDI chanels A and T
+               (default True), note that dipole is only computed for TDI.
+        order -- moment of the response function (default 1 corresponds to monopole
+                 response functions, order = 2 corresponds to dipole response function).
+        comp_all -- computes all response functions (monopole and dipole, X and A channels)
+                    allows to compute everything faster than rerunning the code for each case
+                    (default False)
+        comp_all_rel -- computes only (and all) relevant response functions (i.e., the ones that are not
+                         identically zero or equal to each other due to the geometric symmetries
+                         of the interferometer)
 
     Returns:
-        MAA -- monopole response function of the TDI channel A
-        MEE -- monopole response function of the TDI channel E (same as A)
-        MAE -- monopole response function of the TDI correlation of the
-               channels A and E
-        MTT -- monopole response function of the TDI channel T (Sagnac channel)
-        DAE -- dipole response function of the TDI correlation of the
-               channels A and E
+        MXY -- if order = 1, returns monopole response functions where X, Y can be X, Y, Z (not TDI),
+                A, E, T (TDI)
+        DXY -- if order = 2, returns dipole response functions where X, Y can be X, Y, Z (not TDI),
+                A, E, T (TDI)
+        if comp_all, then returns all: MAA, MEE, MTT, MAE, MAT, MET, DAA, DEE, DTT, DAE, DAT, DET,
+               MXX, MYY, MZZ, MXY, MXZ, MYZ, DXX, DYY, DZZ, DXY, DXZ, DYZ
+        if comp_all_rel, then returns: MAA, MTT, MXX, MXY, DAE, DXY
                
     Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
     "Polarization of gravitational waves from helical MHD turbulent sources,"
     JCAP 04 (2022), 019, arXiv:2107.05356, appendix B (in particular, eq. B.13
     and B.16)
     """
+    
+    if comp_all_rel: comp_all = True
 
     c = const.c
 
@@ -396,17 +519,29 @@ def compute_interferometry(f, L=L_LISA):
                   [1,1,1]])/3
 
     # interferometer response functions (eqs. B.1 and B.9)
-    QA = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
-    QE = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
-    QT = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
+    if TDI or comp_all:
+        QA = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
+        QE = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
+        QT = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
+    if not TDI or comp_all:
+        QX = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
+        QY = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
+        if not comp_all_rel:
+            QZ = np.zeros((3, 3, len(kL), len(theta), len(phi)))*1j
     for i in range(0, 3):
         for j in range(0,3):
             Q1 = .25*np.exp(-1j*kLij*kx1)*(TkU1*U1[i]*U1[j] - TkmU3*U3[i]*U3[j])
             Q2 = .25*np.exp(-1j*kLij*kx2)*(TkU2*U2[i]*U2[j] - TkmU1*U1[i]*U1[j])
             Q3 = .25*np.exp(-1j*kLij*kx3)*(TkU3*U3[i]*U3[j] - TkmU2*U2[i]*U2[j])
-            QA[i,j,:,:,:] = Q1*c[0,0] + Q2*c[0,1] + Q3*c[0,2]
-            QE[i,j,:,:,:] = Q1*c[1,0] + Q2*c[1,1] + Q3*c[1,2]
-            QT[i,j,:,:,:] = Q1*c[2,0] + Q2*c[2,1] + Q3*c[2,2]
+            if TDI or comp_all:
+                QA[i,j,:,:,:] = Q1*c[0,0] + Q2*c[0,1] + Q3*c[0,2]
+                QE[i,j,:,:,:] = Q1*c[1,0] + Q2*c[1,1] + Q3*c[1,2]
+                QT[i,j,:,:,:] = Q1*c[2,0] + Q2*c[2,1] + Q3*c[2,2]
+            if not TDI or comp_all:
+                QX[i,j,:,:,:] = Q1
+                QY[i,j,:,:,:] = Q2
+                if not comp_all_rel:
+                    QZ[i,j,:,:,:] = Q3
 
     k1 = np.cos(ph)*np.sin(th)
     k2 = np.sin(ph)*np.sin(th)
@@ -433,34 +568,140 @@ def compute_interferometry(f, L=L_LISA):
                 if j==0: e1ab[i,j,:,:,:] += -1j*k2
                 elif j==1: e1ab[i,j,:,:,:] += 1j*k1
 
-    FAA = np.zeros((len(kL), len(theta), len(phi)))*1j
-    FAE = np.zeros((len(kL), len(theta), len(phi)))*1j
-    FEE = np.zeros((len(kL), len(theta), len(phi)))*1j
-    FTT = np.zeros((len(kL), len(theta), len(phi)))*1j
+    if TDI or comp_all:
+        if order == 1 and not comp_all:
+            print('computing TDI monopole response functions')
+        if order == 2 and not comp_all:
+            print('computing TDI dipole response functions')
+        if comp_all:
+            print('computing TDI monopole and dipole response functions')
+        FAA = np.zeros((len(kL), len(theta), len(phi)))*1j
+        FAE = np.zeros((len(kL), len(theta), len(phi)))*1j
+        FTT = np.zeros((len(kL), len(theta), len(phi)))*1j
+        if not comp_all_rel:
+            FEE = np.zeros((len(kL), len(theta), len(phi)))*1j
+            FAT = np.zeros((len(kL), len(theta), len(phi)))*1j
+            FET = np.zeros((len(kL), len(theta), len(phi)))*1j            
+    if not TDI or comp_all:
+        if order == 1 and not comp_all:
+            print('computing interferometer monopole response functions')
+        if order == 2 and not comp_all:
+            print('computing interferometer dipole response functions')
+        if comp_all:
+            print('computing interferometer monopole and dipole response functions')
+        FXX = np.zeros((len(kL), len(theta), len(phi)))*1j
+        FXY = np.zeros((len(kL), len(theta), len(phi)))*1j
+        if not comp_all_rel:
+            FYY = np.zeros((len(kL), len(theta), len(phi)))*1j
+            FZZ = np.zeros((len(kL), len(theta), len(phi)))*1j
+            FXZ = np.zeros((len(kL), len(theta), len(phi)))*1j
+            FYZ = np.zeros((len(kL), len(theta), len(phi)))*1j
 
     for a in range(0, 3):
         for b in range(0, 3):
             for c in range(0, 3):
                 for d in range(0, 3):
                     eabcd = .25*e1ab[a,c,:,:,:]*e1ab[b,d,:,:,:]
-                    FAA += eabcd*QA[a,b,:,:,:]*np.conjugate(QA[c,d,:,:,:])
-                    FAE += eabcd*QA[a,b,:,:,:]*np.conjugate(QE[c,d,:,:,:])
-                    FEE += eabcd*QE[a,b,:,:,:]*np.conjugate(QE[c,d,:,:,:])
-                    FTT += eabcd*QT[a,b,:,:,:]*np.conjugate(QT[c,d,:,:,:])
+                    if TDI or comp_all:
+                        FAA += eabcd*QA[a,b,:,:,:]*np.conjugate(QA[c,d,:,:,:])
+                        FAE += eabcd*QA[a,b,:,:,:]*np.conjugate(QE[c,d,:,:,:])
+                        FTT += eabcd*QT[a,b,:,:,:]*np.conjugate(QT[c,d,:,:,:])
+                        if not comp_all_rel:
+                            FEE += eabcd*QE[a,b,:,:,:]*np.conjugate(QE[c,d,:,:,:])
+                            FAT += eabcd*QA[a,b,:,:,:]*np.conjugate(QT[c,d,:,:,:])
+                            FET += eabcd*QE[a,b,:,:,:]*np.conjugate(QT[c,d,:,:,:])
+                    if not TDI or comp_all:
+                        FXX += eabcd*QX[a,b,:,:,:]*np.conjugate(QX[c,d,:,:,:])
+                        FXY += eabcd*QX[a,b,:,:,:]*np.conjugate(QY[c,d,:,:,:])
+                        if not comp_all_rel:
+                            FYY += eabcd*QY[a,b,:,:,:]*np.conjugate(QY[c,d,:,:,:])
+                            FZZ += eabcd*QZ[a,b,:,:,:]*np.conjugate(QZ[c,d,:,:,:])
+                            FXZ += eabcd*QX[a,b,:,:,:]*np.conjugate(QZ[c,d,:,:,:])
+                            FYZ += eabcd*QY[a,b,:,:,:]*np.conjugate(QZ[c,d,:,:,:])
 
-    # Monopole (eq. B.13) and dipole (eq. B.16) response functions of LISA
-    MAA1 = np.trapz(FAA*np.sin(th), th, axis=1)
-    MAA = np.trapz(MAA1, phi, axis=1)/np.pi
-    MAE1 = np.trapz(FAE*np.sin(th), th, axis=1)
-    MAE = np.trapz(MAE1, phi, axis=1)/np.pi
-    MEE1 = np.trapz(FEE*np.sin(th), th, axis=1)
-    MEE = np.trapz(MEE1, phi, axis=1)/np.pi
-    MTT1 = np.trapz(FTT*np.sin(th), th, axis=1)
-    MTT = np.trapz(MTT1, phi, axis=1)/np.pi
-    DAE1 = 1j*np.trapz(FAE*np.sin(th)**2*np.sin(ph), th, axis=1)
-    DAE = np.trapz(DAE1, phi, axis=1)/np.pi
+    # Monopole (eq. B.13) and dipole (eq. B.16) response functions of LISA for TDI channels
+    if TDI or comp_all:
+        
+        if order == 1 or comp_all:
+            MAA1 = np.trapz(FAA*np.sin(th), th, axis=1)
+            MAA = np.trapz(MAA1, phi, axis=1)/np.pi
+            MTT1 = np.trapz(FTT*np.sin(th), th, axis=1)
+            MTT = np.trapz(MTT1, phi, axis=1)/np.pi
+            if not comp_all_rel:
+                MEE1 = np.trapz(FEE*np.sin(th), th, axis=1)
+                MEE = np.trapz(MEE1, phi, axis=1)/np.pi
+                MAE1 = np.trapz(FAE*np.sin(th), th, axis=1)
+                MAE = np.trapz(MAE1, phi, axis=1)/np.pi
+                MAT1 = np.trapz(FAT*np.sin(th), th, axis=1)
+                MAT = np.trapz(MAT1, phi, axis=1)/np.pi
+                MET1 = np.trapz(FET*np.sin(th), th, axis=1)
+                MET = np.trapz(MET1, phi, axis=1)/np.pi
+            
+            if not comp_all:
+                return MAA, MEE, MTT, MAE, MAT, MET
 
-    return MAA, MAE, MEE, MTT, DAE
+        if order == 2 or comp_all:
+            DAE1 = 1j*np.trapz(FAE*np.sin(th)**2*np.sin(ph), th, axis=1)
+            DAE = np.trapz(DAE1, phi, axis=1)/np.pi
+            if not comp_all_rel:
+                DAA1 = 1j*np.trapz(FAA*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DAA = np.trapz(DAA1, phi, axis=1)/np.pi
+                DEE1 = 1j*np.trapz(FEE*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DEE = np.trapz(DEE1, phi, axis=1)/np.pi
+                DTT1 = 1j*np.trapz(FTT*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DTT = np.trapz(DTT1, phi, axis=1)/np.pi
+                DAT1 = 1j*np.trapz(FAT*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DAT = np.trapz(DAT1, phi, axis=1)/np.pi
+                DET1 = 1j*np.trapz(FET*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DET = np.trapz(DET1, phi, axis=1)/np.pi
+            
+            if not comp_all:
+                return DAA, DEE, DTT, DAE, DAT, DET
+
+    if not TDI or comp_all:
+
+        if order == 1 or comp_all:
+            MXX1 = np.trapz(FXX*np.sin(th), th, axis=1)
+            MXX = np.trapz(MXX1, phi, axis=1)/np.pi
+            MXY1 = np.trapz(FXY*np.sin(th), th, axis=1)
+            MXY = np.trapz(MXY1, phi, axis=1)/np.pi
+            if not comp_all_rel:
+                MYY1 = np.trapz(FYY*np.sin(th), th, axis=1)
+                MYY = np.trapz(MYY1, phi, axis=1)/np.pi
+                MZZ1 = np.trapz(FZZ*np.sin(th), th, axis=1)
+                MZZ = np.trapz(MZZ1, phi, axis=1)/np.pi
+                MXZ1 = np.trapz(FXZ*np.sin(th), th, axis=1)
+                MXZ = np.trapz(MXZ1, phi, axis=1)/np.pi
+                MYZ1 = np.trapz(FYZ*np.sin(th), th, axis=1)
+                MYZ = np.trapz(MYZ1, phi, axis=1)/np.pi
+            
+            if not comp_all:
+                return MXX, MYY, MZZ, MXY, MXZ, MYZ
+
+        if order == 2 or comp_all:
+            DXY1 = 1j*np.trapz(FXY*np.sin(th)**2*np.sin(ph), th, axis=1)
+            DXY = np.trapz(DXY1, phi, axis=1)/np.pi
+            if not comp_all_rel:
+                DXX1 = 1j*np.trapz(FXX*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DXX = np.trapz(DXX1, phi, axis=1)/np.pi
+                DYY1 = 1j*np.trapz(FYY*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DYY = np.trapz(DYY1, phi, axis=1)/np.pi
+                DZZ1 = 1j*np.trapz(FZZ*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DZZ = np.trapz(DZZ1, phi, axis=1)/np.pi
+                DXZ1 = 1j*np.trapz(FXZ*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DXZ = np.trapz(DXZ1, phi, axis=1)/np.pi
+                DYZ1 = 1j*np.trapz(FYZ*np.sin(th)**2*np.sin(ph), th, axis=1)
+                DYZ = np.trapz(DYZ1, phi, axis=1)/np.pi
+            
+            if not comp_all:
+                return DXX, DYY, DZZ, DXY, DXZ, DYZ
+
+    if comp_all:
+        if comp_all_rel:
+            return MAA, MTT, DAE, MXX, MXY, DXY
+        else:
+            return MAA, MEE, MTT, MAE, MAT, MET, DAA, DEE, DTT, DAE, DAT, DET, \
+                   MXX, MYY, MZZ, MXY, MXZ, MYZ, DXX, DYY, DZZ, DXY, DXZ, DYZ
 
 def refine_M(f, M, A=.3, exp=0):
 
@@ -486,103 +727,148 @@ def refine_M(f, M, A=.3, exp=0):
     Ms = np.append(A*ff0.value**exp, np.real(M))
     return fs, Ms
 
-def compute_response_LISA_Taiji(dir0=dir0, save=True, ret=False):
+def compute_response_LISA_Taiji(f=f_ref, dir0=dir0, save=True, ret=False):
     
-    '''
+    """
     Function that computes LISA and Taiji's monopole and dipole response functions
-    using the 'compute_interferometry' routine.
+    using the 'compute_interferometry' routine. It only computes the relevant
+    response functions (see the tutorial 'response_functions.ipynb' for details).
     
     Arguments:
         dir0 -- directory where to save the results (default is 'detector_sensitivity')
-        save -- option to save the results as output files (default True)
+        save -- option to save the results as output files (default True) with name
+                'LISA_response_f' and 'Taiji_response_f'
         ret -- option to return the results from the function
-    '''
+        
+    Returns:
+        MAA -- monopole response function of the TDI channel A
+        MTT -- monopole response function of the TDI channel T (Sagnac channel)
+        DAE -- dipole response function of the TDI correlation of the
+               channels A and E
+        MXX -- monopole response function of the interferometer channel X
+        MXY -- monopole response function of the correlation of interferometer
+               channels X and Y
+        DXY -- dipole response functions of the correlation of the interferometer
+               channels X and Y
+    """
 
     f = np.logspace(-4, 0, 5000)*u.Hz
 
     # LISA response functions
-    MAA, MAE, MEE, MTT, DAE = compute_interferometry(f, L=L_LISA)
+    print('Calculating LISA response functions')
+    MAA, MTT, DAE, MXX, MXY, DXY = compute_interferometry(f=f, L=L_LISA, comp_all_rel=True)
     # Taiji response functions
-    MAA_Tai, MAE_Tai, MEE_Tai, MTT_Tai, DAE_Tai = \
-            compute_interferometry(f, L=L_Taiji)
+    print('Calculating Taiji response functions')
+    MAA_Tai, MTT_Tai, DAE_Tai, MXX_Tai, MXY_Tai, DXY_Tai = \
+            compute_interferometry(f=f, L=L_Taiji, comp_all_rel=True)
 
     # refine response functions at low frequencies (from known results)
     fs, MAs = refine_M(f, MAA)
     fs, MAs_Tai = refine_M(f, MAA_Tai)
     fs, MTs = refine_M(f, MTT, A=1.709840e6, exp=6)
     fs, MTs_Tai = refine_M(f, MTT_Tai, A=5.105546e6, exp=6)
-    fs, MAEs = refine_M(f, MAE, A=-2.7870505059493287e-5)
-    fs, MAEs_Tai = refine_M(f, MAE_Tai, A=-2.7870505059493287e-5)
     fs, DAEs = refine_M(f, DAE, A=.2)
     fs, DAEs_Tai = refine_M(f, DAE_Tai, A=.2)
+    fs, MXs = refine_M(f, MXX, A=MXX[0])
+    fs, MXs_Tai = refine_M(f, MXX_Tai, A=MXX_Tai[0])
+    fs, MXYs = refine_M(f, MXY, A=MXY[0])
+    fs, MXYs_Tai = refine_M(f, MXY_Tai, A=MXY_Tai[0])
+    fs, DXYs = refine_M(f, DXY, A=DXY[0])
+    fs, DXYs_Tai = refine_M(f, DXY_Tai, A=DXY_Tai[0])
 
     # Write response functions in csv files
     if save:
+        df = pd.DataFrame({'frequency': fs, 'MX': np.real(MXs), 'MXY': np.real(MXYs),
+                           'DXY': np.real(DXYs)})
+        df.to_csv(dir0 + 'LISA_response_f_X.csv')
         df = pd.DataFrame({'frequency': fs, 'MA': MAs, 'MT': MTs,
-                           'MAE': MAEs, 'DAE': DAEs})
-        df.to_csv(dir0 + 'LISA_response_f.csv')
+                           'DAE': DAEs})
+        df.to_csv(dir0 + 'LISA_response_f_TDI.csv')
+        print('saved response functions of channels X, Y of LISA in ', dir0 + 'LISA_response_f_X.csv')
+        print('saved response functions of TDI channels of LISA in ', dir0 + 'LISA_response_f_TDI.csv')
+        df_Tai = pd.DataFrame({'frequency': fs, 'MX': np.real(MXs_Tai), 'MXY': np.real(MXYs_Tai),
+                           'DXY': np.real(DXYs_Tai)})
+        df_Tai.to_csv(dir0 + 'Taiji_response_f_X.csv')
         df_Tai = pd.DataFrame({'frequency': fs, 'MA': MAs_Tai, 'MT': MTs_Tai,
-                               'MAE': MAEs_Tai, 'DAE': DAEs_Tai})
-        df_Tai.to_csv(dir0 + 'Taiji_response_f.csv')
+                           'DAE': DAEs_Tai})
+        df_Tai.to_csv(dir0 + 'Taiji_response_f_TDI.csv')
+        print('saved response functions of channels X, Y of Taiji in ', dir0 + 'Taiji_response_f_X.csv')
+        print('saved response functions of TDI channels of Taiji in ', dir0 + 'Taiji_response_f_TDI.csv')
 
     if ret:
-        return fs, MAs, MTs, MAEs, DAEs, MAs_Tai, MTs_Tai, MAEs_Tai, DAEs_Tai
+        return fs, MAs, MTs, DAEs, MXs, MXYs, DXYs, \
+               MAs_Tai, MTs_Tai, DAEs_Tai, MXs_Tai, MXYs_Tai, DXYs_Tai
 
-def read_response_LISA_Taiji(dir0=dir0):
-    
-    '''
-    Function that reads the response functions of LISA and Taiji from the file
-    generated and saved in the routine 'compute_response_LISA_Taiji'.
-    
-    Arguments: 
-        dir0 -- directory where to save the results (default is 'detector_sensitivity')
-    '''
+############################## SENSITIVITIES AND SNR ##############################
 
-    df = pd.read_csv(dir0 + 'LISA_response_f.csv')
-    df_Tai = pd.read_csv(dir0 + 'Taiji_response_f.csv')
-    fs = np.array(df['frequency'])
-    MAs = np.array(df['MA'])
-    MAEs = np.array(df['MAE'])
-    MTs = np.array(df['MT'])
-    DAEs = np.array(df['DAE'])
-    MAs_Tai = np.array(df_Tai['MA'])
-    MAEs_Tai = np.array(df_Tai['MAE'])
-    MTs_Tai = np.array(df_Tai['MT'])
-    DAEs_Tai = np.array(df_Tai['DAE'])
-    fs = fs*u.Hz
-
-    return fs, MAs, MAEs, MTs, DAEs, MAs_Tai, MAEs_Tai, MTs_Tai, DAEs_Tai
-
-def read_MAC(dir0=dir0 + '/LISA_Taiji/', M='MAC', V='V'):
+def Sn_f(fs=f_ref, interf='LISA', TDI=True, M='MED', Xi=False):
 
     """
-    Function that reads the V response functions of the cross-correlated
-    channels of the LISA-Taiji network.
+    Function that computes the strain sensitivity using the analytical fit
+    for an interferometer channel X.
 
-    Argument:
-        dir0 -- directory where to save the results (default is
-                'detector_sensitivity/LISA_Taiji/')
-        M -- string of the channels to be read (options are default 'MAC',
-             'MAD', 'MEC', 'MED')
-        V -- can be changed to read the 'I' response function (default 'V')
+    Arguments:
+        interf -- option to chose the interferometer (default 'LISA', other
+                  option availables are 'Taiji' and 'comb', referring to cross-correlated
+                  channels of LISA and Taiji)
+        TDI -- option to read the response functions for TDI chanels, instead of XYZ
+               chanels (default True)
+        M -- selection of cross-correlated channels (only when interf='comb', default 'MED')
+        V -- selection of Stokes parameter (default intensity I)
+        Xi -- option to compute strain sensitivity to polarized GW backgrounds from the
+              anisotropies induced due to the Solar System proper motion (default False)
+
+    Returns:
+        fs -- frequency array
+        SnA -- strain sensitivity in the channel A (if TDI), X (if not TDI) or if Xi is True,
+               in the cross-correlated channels A and E (if TDI) or X and Y (if not TDI)
+        SnT -- strain sensitivity in the Sagnac channel T (if TDI), or in the cross-correlated
+               X and Y channels (if not TDI), only returns SnT if Xi is False
+    """
+    
+    # read LISA and Taiji TDI response functions
+    if interf != 'comb':
+        fs, MAs, MTs, DAEs = read_response_LISA_Taiji(TDI=TDI, interf=interf)
+    else:
+        if not Xi:
+            f_ED_I, M_ED_I = read_MAC(M=M, V='I') # read correlated ED response
+            if M == 'MED': f_ED_I, M_ED_I = refine_M(f_ED_I, M_ED_I, A=0.028277196782809974)
+            M_ED_I *= 2 # to get monopole response function
+            fs = np.logspace(np.log10(f_ED_I[0].value), np.log10(f_ED_I[-1].value), 1000)*u.Hz
+            MAs = np.interp(fs, f_ED_I, M_ED_I)
+        else:
+            fs, M_AC, M_AD, M_EC, M_ED = read_all_MAC(V='V')
+            if M == 'MAC': MAs = abs(M_AC)
+            if M == 'MAD': MAs = abs(M_AD)
+            if M == 'MEC': MAs = abs(M_EC)
+            if M == 'MED': MAs = abs(M_ED)
+        MTs = MAs**0
+    
+    ## power spectral density of the noise
+    if interf == 'LISA':
+        PnA, PnT = Pn_f(f=fs, TDI=TDI, P=P_LISA, A=A_LISA, L=L_LISA)
+    if interf == 'Taiji':
+        PnA, PnT = Pn_f(f=fs, TDI=TDI, P=P_Taiji, A=A_Taiji, L=L_Taiji)
+    if interf == 'comb':
+        PnA, PnT = Pn_f(f=fs, TDI=TDI, P=P_LISA, A=A_LISA, L=L_LISA)
+        PnC, PnS = Pn_f(f=fs, TDI=TDI, P=P_Taiji, A=A_Taiji, L=L_Taiji)
+        PnA = np.sqrt(PnA*PnC)
+        PnT = np.sqrt(PnT*PnS)
         
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, figure 18
-    """
+    # if Xi is True, it only returns the strain sensitivity to cross-correlated
+    # channels A and E
+    if Xi == True:
+        if interf != 'comb':
+            SnA = PnA/v/abs(DAEs)
+        else:
+            SnA = PnA/MAs
+        return fs, SnA
+    
+    # if not TDI, then PnA -> PnX, PnT -> Pncross, MAs -> MXs, MTs -> MXYs
+    else:
+        return fs, PnA/MAs, PnT/MTs
 
-    df = pd.read_csv(dir0 + M + '_' + V + '.csv')
-    f = np.array(df['f'])
-    MAC = np.array(df['M'])
-    inds = np.argsort(f)
-    f = f[inds]
-    MAC = MAC[inds]
-    f = f*u.Hz
-    return f, MAC
-
-# this function is already defined in cosmoGW so one should get rid of it and change use to cosmoGW one
-# the notation is a bit confusing, should be related clearly to Sh(f)
-def Oms(f, S, h0=1.):
+def Oms(f, S, h0=1., comb=False, S2=[], S3=[], S4=[], Xi=False):
 
     """
     Function that returns the sensitivity Sh(f) in terms of the GW energy density Om(f)
@@ -590,36 +876,97 @@ def Oms(f, S, h0=1.):
     Arguments:
         f -- frequency array (should be in units of Hz)
         S -- strain sensitivity function
+        h0 -- parameterizes the uncertainties (Hubble tension) on the value
+              of the Hubble rate (default 1)
+        Xi -- option to compute strain sensitivity to polarized GW backgrounds from the
+              anisotropies induced due to the Solar System proper motion (default False)
+        comb -- option to combine two sensitivities (e.g. LISA-Taiji sensitivities)
+        S2 -- if comb is True, then second sensitivity to be combined
+        S3, S4 -- if comb and Xi are both True, then it combines 4 sensitivites by cross-correlating
+                  each of the 4 combinations of channels between LISA and Taiji (for example)
 
     Returns:
         Omega -- GW energy density sensitivity
         
     Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
     "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.18
+    JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.18 (seems like it might have
+    a typo, need to investigate this!). Final PLS sensitivites are again correct
+    for a single chanel, since the factor of 2 in the SNR compensates for the
+    1/2 factor here.
     
-    Note that the notation Sh(f) here is equivalent to f x hc^2(f) in M. Maggiore,
-    "Gravitational wave experiments and early universe cosmology," Phys.Rept. 331, 283 (2000),
-    arXiv:gr-qc/9909001, instead of their Sh(f) (which differs by a factor of 2), see
-    eqs. 12 and 17
+    For Xi, the GW energy density sensitivity is given in A. Roper Pol, S. Mandal,
+    A. Brandenburg, T. Kahniashvili, "Polarization of gravitational waves from helical
+    MHD turbulent sources," JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.21
+    
+    For combined sensitivities, the GW energy density sensitivity is given in A. Roper Pol,
+    S. Mandal, A. Brandenburg, T. Kahniashvili, "Polarization of gravitational waves from helical
+    MHD turbulent sources," JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.37 (GW energy density,
+    combining LISA and Taiji TDI channels A and C) and B.41 (polarization, combining 4 cross-correlation
+    between LISA and Taiji TDI channels AE, AD, CE, CD)
+    
+    Strain sensitivities, Omega sensitivities, and OmGW PLS have been compared to those of the ref.
+    below and agree.
+    
+    Reference: C. Caprini, D. Figueroa, R. Flauger, G. Nardini, M. Peloso,
+    M. Pieroni, A. Ricciardone, G. Tassinato, "Reconstructing the spectral shape
+    of a stochastic gravitational wave background with LISA," JCAP 11 (2019), 017,
+    arXiv:1906.09244, eq. 2.14
     """
-    
-    H0 = 100*u.km/u.s/u.Mpc
-    H0 = H0.to(u.Hz)
-    A = 8*np.pi**2/3/H0**2
+
+    H0 = co.H0_ref           # reference value of H0 from cosmology (100 km/s/Mpc)
+    #A = 8*np.pi**2/3/H0**2
+    # corrected factor (to be checked!!)
+    A = 4*np.pi**2/3/H0**2
+    if Xi: A /= 2
     Omega = S*A*f**3
+    
+    # if we are combining more than one channel for the sensitivity, we average them
+    # through the harmonic mean
+    if comb:
+        Omega2 = S2*A*f**3
+        Omega = 1/np.sqrt(1/Omega**2 + 1/Omega2**2)
+        if Xi:
+            Omega3 = S3*A*f**3
+            Omega4 = S4*A*f**3
+            Omega = 1/np.sqrt(1/Omega**2 + 1/Omega2**2 + \
+                     1/Omega3**2 + 1/Omega4**2)
 
     return Omega
 
-def OmPLS(f, Oms, beta, SNR=1, T=0, Xi=0):
+def compute_Oms_LISA_Taiji(interf='LISA', TDI=True, h0=1.):
+    
+    """
+    Function that reads the response functions for LISA and/or Taiji, computes the strain
+    sensitivities and from those, the sensitivity to the GW energy density spectrum \Omega_s
+    
+    Arguments:
+         interf -- option to chose the interferometer (default 'LISA', other
+                  option availables are 'Taiji' and 'comb', referring to cross-correlated
+                  channels of LISA and Taiji)
+         TDI -- option to read the response functions for TDI chanels, instead of XYZ
+                chanels (default True)
+    """
+    
+    # read LISA and Taiji strain sensitivities Sn_f(f)
+    fs, SnA, SnT = Sn_f(interf=interf, TDI=TDI)
+    
+    # Sn is the sensitivity of the channel A (if TDI) or X (if not TDI) for LISA or 
+    # Taiji (depending on what is interf)
+    OmSA = Oms(fs, SnA, h0=h0, comb=False, Xi=False)
+    OmST = Oms(fs, SnT, h0=h0, comb=False, Xi=False)
+    
+    return fs, OmSA, OmST
+
+def OmPLS(Oms, f=f_ref, beta=beta_ref, SNR=1, T=1, Xi=0):
 
     """
     Function that computes the power law sensitivity (PLS).
 
     Arguments:
-        f -- frequency array (should be in units of Hz)
         Oms -- GW energy density sensitivity
-        beta -- array of slopes
+        f -- frequency array (should be in units of Hz, default is f_ref)
+        beta -- array of slopes (default is beta_ref from -20 to 20)
         SNR -- threshold signal-to-noise ratio (SNR) to compute the PLS
                (default 1)
         T -- duration of the observation (in units of year, default 1)
@@ -628,15 +975,21 @@ def OmPLS(f, Oms, beta, SNR=1, T=0, Xi=0):
 
     Returns:
         Omega -- GW energy density power law sensitivity (PLS)
+        
+    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+    "Polarization of gravitational waves from helical MHD turbulent sources,"
+    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B (eq. B31)
     """
 
     Cbeta = np.zeros(len(beta))
-    if T == 0: T = 1*u.yr
-    T = T.to(u.s)
+    T = (T*u.yr).to(u.s)
     for i in range(0, len(beta)):
         aux = f.value**(2*beta[i])
         aa = abs(1 - Xi*beta[i])
-        Cbeta[i] = SNR*.5/aa/np.sqrt(np.trapz(aux/Oms**2, f.value)*T.value)
+        #Cbeta[i] = SNR*.5/aa/np.sqrt(np.trapz(aux/Oms**2, f.value)*T.value)
+        # corrected .5 factor that should not be there in principle, this typo
+        # cancels out with the one in the functions SNR and Oms
+        Cbeta[i] = SNR/aa/np.sqrt(np.trapz(aux/Oms**2, f.value)*T.value)
 
     funcs = np.zeros((len(f), len(beta)))
     for i in range(0, len(beta)): funcs[:,i] = f.value**beta[i]*Cbeta[i]
@@ -661,6 +1014,10 @@ def SNR(f, OmGW, fs, Oms, T=1.):
 
     Returns:
         SNR -- SNR of the GW signal
+
+    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+    "Polarization of gravitational waves from helical MHD turbulent sources,"
+    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B (eq. B30)
     """
 
     T = T*u.yr
@@ -672,6 +1029,9 @@ def SNR(f, OmGW, fs, Oms, T=1.):
     OmGW[np.where(fs < f[0])] = 0
     OmGW[np.where(fs > f[-1])] = 0
     integ = np.trapz((OmGW/Oms)**2, fs)
-    SNR = 2*np.sqrt(T*integ)
+    #SNR = 2*np.sqrt(T*integ)
+    # corrected factor of 2 that should not be there in principle, this typo
+    # cancels out with the one in the functions Oms and OmPLS
+    SNR = np.sqrt(T*integ)
 
     return SNR

@@ -5,7 +5,7 @@ to the detection of SGWB.
 
 Author: Alberto Roper Pol
 Created: 01/05/2022
-Updated: 20/07/2023 (release of the cosmoGW code)
+Updated: 05/09/2023 (release of the cosmoGW code)
 
 Main reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
 "Polarization of gravitational waves from helical MHD turbulent sources,"

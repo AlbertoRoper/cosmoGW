@@ -3,8 +3,7 @@ cosmoGW.py is a Python routine that contains functions relevant for
 cosmological stochastic gravitational wave backgrounds (SGWB).
 
 Author: Alberto Roper Pol
-Created: 01/12/2021
-Updated: 05/09/2023 for new release of cosmoGW
+Date: 01/12/2021
 """
 
 import astropy.constants as const
@@ -14,7 +13,7 @@ import cosmology as co
 
 # reference values and constants (EWPT)
 Tref = 100*u.GeV #EWPT
-gref = 100       # EWPT
+gref = 100  # EWPT
 
 ########################## SGWB at present time ##########################
 
@@ -307,3 +306,11 @@ def shift_hc_today(k, hc, g=gref, T=Tref, d=1, kk=True):
     f = shift_frequency_today(k, g=g, T=T, d=d, kk=kk)
 
     return f, hc0
+
+############################### NOT PUBLIC ON GITHUB ##########################
+
+def ks_infla(beta, gamma, eta=1):
+
+    ks = 2*beta/(1 + eta)*(gamma + np.sqrt(1 + gamma**2 + 1/2/beta))
+
+    return ks

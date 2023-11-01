@@ -5,6 +5,24 @@ cosmological stochastic gravitational wave backgrounds (SGWB).
 Author: Alberto Roper Pol
 Created: 01/12/2021
 Updated: 01/11/2023 (release of the cosmoGW code)
+
+Main references are:
+
+Magg00 - M. Maggiore, "Gravitational wave experiments and
+early universe cosmology," Phys.Rept. 331 (2000) 283-367, arXiv:gr-qc/9909001
+
+RPMBK22 - A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+"Polarization of gravitational waves from helical MHD turbulent sources,"
+JCAP 04 (2022), 019, arXiv:2107.05356
+
+RPCNS22 - A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
+signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
+Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630
+
+RPBKKM20 - A. Roper Pol, A. Brandenburg, T. Kahniashvili, A. Kosowsky, S. Mandal,
+"The timestep constraint in solving the gravitational wave equations sourced by
+hydromagnetic turbulence," Geophys. Astrophys. Fluid Dynamics 114, 1, 130 (2020)
+arXiv:1807.05479
 """
 
 import astropy.constants as const
@@ -34,8 +52,7 @@ def fac_hc_OmGW(d=1, h0=1.):
         fac -- factor to convert from the strain function hc(f) to the GW
                energy density OmGW (f) in frequency units (Hz)
 
-    Reference: M. Maggiore, "Gravitational wave experiments and early universe cosmology,"
-    Phys.Rept. 331 (2000) 283-367, arXiv:gr-qc/9909001, eq. 17
+    Reference: Magg00, eq. 17
     """
 
     g0, g0s, T0, H0 = co.values_0(h0=h0)
@@ -64,18 +81,14 @@ def hc_OmGW(f, OmGW, d=1, h0=1.):
 
     References (comment on notations):
 
-    Main reference here is M. Maggiore, "Gravitational wave experiments and
-    early universe cosmology," Phys.Rept. 331 (2000) 283-367, arXiv:gr-qc/9909001,
-    eq. 17:
+    Main reference here is Magg00, eq. 17:
 
     OmGW(f) = (2 \pi^2)/(3 H0)^2 f^2 hc^2 (f).
 
     hc2 (f) is then defined as the spectrum in log(f) of h+^2 + hx^2 and
     Maggiore defines Sh(f) in eq. B12 such that hc^2 (f) = 2 f Sh_Mag (f).
 
-    Note that this is different than the notation in  A. Roper Pol, S. Mandal,
-    A. Brandenburg, T. Kahniashvili, "Polarization of gravitational waves from
-    helical MHD turbulent sources," JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.18,
+    Note that this is different than the notation in  RPMBK22, eq. B.18,
     used in interferometry.py, where hc^2 (f) = f Sh^\pm (f), such that this is
     Sh^\pm (f) = 2 Sh_Mag (f).
 
@@ -105,9 +118,7 @@ def hc_Sf(f, Sf, d=1):
     Returns:
         hc -- strain spectrum
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 42
+    Reference: RPCNS22, eq. 42
     """
 
     f = f.to(u.Hz)
@@ -144,9 +155,7 @@ def Omega_A(A=1, fref=0, beta=0, h0=1.):
     Returns:
         Omref -- amplitude of the GW energy density PL
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 44
+    Reference: RPCNS22, eq. 44
     """
 
     fac = fac_hc_OmGW(d=-1, h0=h0)
@@ -180,9 +189,7 @@ def shift_onlyOmGW_today(OmGW, g=gref, d=1, h0=1.):
     Returns:
         OmGW0 -- shifted spectrum OmGW to present time
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 27
+    Reference: RPCNS22, eq. 27
     """
 
     Hs_f = co.Hs_fact()*u.MeV**2
@@ -216,9 +223,7 @@ def shift_frequency_today(k, g=gref, T=Tref, d=1, kk=True):
         f -- shifted wave number to frequency as a present time observable
              (in Hz)
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 32
+    Reference: RPCNS22, eq. 32
     """
 
     HHs = co.Hs_val(g=g, T=T)*co.as_a0_rat(g=g, T=T)
@@ -294,10 +299,7 @@ def shift_hc_today(k, hc, g=gref, T=Tref, d=1, kk=True):
              (in Hz)
         hc0 -- shifted hc spectrum to present time
 
-    Reference: A. Roper Pol, A. Brandenburg, T. Kahniashvili, A. Kosowsky, S. Mandal,
-    "The timestep constraint in solving the gravitational wave equations sourced by
-    hydromagnetic turbulence," Geophys.Astrophys.Fluid Dynamics 114, 1, 130 (2020)
-    arXiv:1807.05479, eq. B.12
+    Reference: RPBKKM20, eq. B.12
     """
 
     as_f = co.as_fact()
@@ -307,11 +309,3 @@ def shift_hc_today(k, hc, g=gref, T=Tref, d=1, kk=True):
     f = shift_frequency_today(k, g=g, T=T, d=d, kk=kk)
 
     return f, hc0
-
-############################### NOT PUBLIC ON GITHUB ##########################
-
-def ks_infla(beta, gamma, eta=1):
-
-    ks = 2*beta/(1 + eta)*(gamma + np.sqrt(1 + gamma**2 + 1/2/beta))
-
-    return ks

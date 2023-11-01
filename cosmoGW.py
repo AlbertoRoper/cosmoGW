@@ -3,7 +3,8 @@ cosmoGW.py is a Python routine that contains functions relevant for
 cosmological stochastic gravitational wave backgrounds (SGWB).
 
 Author: Alberto Roper Pol
-Date: 01/12/2021
+Created: 01/12/2021
+Updated: 01/11/2023 (release of the cosmoGW code)
 """
 
 import astropy.constants as const

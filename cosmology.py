@@ -4,7 +4,26 @@ for cosmological calculations, including a solver to Friedmann equations.
 
 Author: Alberto Roper Pol
 Created: 27/11/2022
-Updated: 20/07/2023 (release of the cosmoGW code)
+Updated: 01/11/2023 (release of the cosmoGW code)
+
+Main references are:
+
+HRPB23 - Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
+waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082
+
+RPCNS22 - A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
+signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
+Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630
+
+RPMBKK20 - A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili, A. Kosowsky,
+"Numerical simulations of gravitational waves from early-universe turbulence,"
+Phys. Rev. D 102, 083512 (2020), arXiv:1903.08585
+
+RPBKKM20 - A. Roper Pol, A. Brandenburg, T. Kahniashvili, A. Kosowsky, S. Mandal,
+"The timestep constraint in solving the gravitational wave equations sourced by
+hydromagnetic turbulence," Geophys. Astrophys. Fluid Dynamics 114, 1, 130 (2020),
+arXiv:1807.05479
+
 """
 
 import astropy.constants as const
@@ -88,9 +107,7 @@ def Hs_fact():
     is given after multiplying fact*sqrt(g)*T^2, being g the number of dof and
     T the temperature scale (in MeV).
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 29
+    Reference: RPCNS22, eq. 29
     """
 
     fact = np.sqrt(4*np.pi**3*const.G/45/const.c**5/const.hbar**3)
@@ -113,9 +130,7 @@ def Hs_val(g=gref, T=Tref):
     Returns:
         Hs -- Hubble rate in frequency units (Hz)
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 29
+    Reference: RPCNS22, eq. 29
     """
 
     Hs_f = Hs_fact()
@@ -135,9 +150,7 @@ def as_fact():
     fact*g^(-1/3)/T, being g the number of dof and T the temperature scale
     (in MeV).
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 28
+    Reference: RPCNS22, eq. 28
     """
 
     g0, g0s, T0, _ = values_0()
@@ -161,9 +174,7 @@ def as_a0_rat(g=gref, T=Tref):
     Returns:
         as_a0 -- ratio of scale factors (a*/a0)
 
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630, eq. 28
+    Reference: RPCNS22, eq. 28
     """
 
     as_f = as_fact()
@@ -189,9 +200,7 @@ def rho_radiation(T=Tref, g=gref):
     Returns:
         rho_rad -- energy density in GeV/m^3 units
         
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili, A. Kosowsky,
-    "Numerical simulations of gravitational waves from early-universe turbulence,"
-    Phys. Rev. D 102, 083512 (2020), arXiv:1903.08585, eq. 3
+    Reference: RPMBKK20, eq. 3
     """
     
     rho_rad = np.pi**2/30*g*T**4/(const.hbar*const.c)**3
@@ -211,9 +220,7 @@ def rho_critical(H):
     Returns:
         rho_c -- energy density in GeV/m^3 units
         
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili, A. Kosowsky,
-    "Numerical simulations of gravitational waves from early-universe turbulence,"
-    Phys. Rev. D 102, 083512 (2020), arXiv:1903.08585, eq. 3
+    Reference: RPMBKK20, eq. 3
     """
     
     rho_c = 3*H**2*const.c**2/8/np.pi/const.G
@@ -291,11 +298,9 @@ def thermal_g(dir0='', T=Tref, s=0, file=True):
 ############################### FRIEDMANN EQUATIONS ###############################
 
 """
-The code has been developed and used for the results of Y. He, A. Roper Pol,
-A. Brandenburg, "Modified propagation of gravitational waves from the early
-radiation era," JCAP 06 (2023), 025, arXiv:2212.06082 (appendix A).
+The code has been developed and used for the results of HRPB23 (appendix A).
 
-Friedmann solver included on June 2022, a tutorial is available under cosmology/cosmology.ipynb
+Friedmann solver included in June 2022, a tutorial is available under cosmology/cosmology.ipynb
 """
 
 def RD_dofs(dir0='', Neff=Neff_ref):
@@ -386,24 +391,24 @@ def dofs_vs_a(a, dir0='', Neff=Neff_ref):
     return gs, gS
 
 def Hs_from_a(a, dir0='', Neff=Neff_ref):
-    
+
     """
     Function that computes the Hubble rate H_* during the RD era given only the scale
     factor and assuming adiabatic expansion
-        
+
         a^3 g_S T^3 = constant
-    
+
     Arguments:
         a -- array of scale factors
         dir0 -- directory where the file of dof is stored ('/cosmology/' directory by default)
         Neff -- effective number of neutrino species (default is 3)
-        
+
     Returns:
         Hs -- Hubble rate during RD era
-        
+
     Calls functions 'values_0' and 'thermal_g'; see references therein.
     """
-    
+
     # compute the dofs
     gs, gS = dofs_vs_a(a, Neff=Neff, dir0=dir0)
     # compute the temperature scale from adiabatic expansions
@@ -411,29 +416,28 @@ def Hs_from_a(a, dir0='', Neff=Neff_ref):
     T = T0.to(u.MeV)/a*(g0s/gs)**(1/3)
     # get the Hubble rate
     Hs = Hs_val(T=T, g=gs)
-    
+
     return Hs
 
 def Omega_rad_dof(a, dir0='', Neff=Neff_ref):
-    
+
     """
     Function that computes the factor that takes into account the radiation
     energy density ratio variation due to the inclusion of varying dofs during
     the RD era.
-    
+
     Arguments:
         a -- array of scale factors
         dir0 -- directory where the file of dof is stored ('/cosmology/' directory by default)
         Neff -- effective number of neutrino species (default is 3)
-        
+
     Returns:
         Om_rat_dof -- ratio of radiation energy density due to accounting for
                       T depending dofs
-    
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082, eq.A.2
+
+    Reference: HRPB23, eq.A.2
     """
-    
+
     gs, gS = dofs_vs_a(a, dir0=dir0, Neff=Neff)
     g0, g0s, T0, H0 = values_0(neut=True, Neff=Neff)
     Om_rat_dof = (gs/g0)*(gS/g0s)**(-4/3)
@@ -472,8 +476,7 @@ def Omega_vs_a(a, dir0='', a0=1, h0=h0_ref, OmL0=OmL0_ref, dofs=True, Neff=Neff_
         Om_rad -- radiation energy density (normalized)
         Om_matt -- matter energy density (normalized)
     
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082, eq.A.2
+    Reference: HRPB23, eq.A.2
     """
     
     ########## compute Om_rad0 ##########
@@ -519,9 +522,7 @@ def friedmann(a, dir0='', a0=1, h0=h0_ref, OmL0=OmL0_ref, dofs=True, Neff=Neff_r
         ap -- conformal time derivative of the scale factor
         app -- second conformal time derivative of the scale factor
     
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082,
-    eqs. A.5-A.6
+    Reference: HRPB23, eqs. A.5-A.6
     """
     
     g0, g0s, T0, H0 = values_0(h0=h0, neut=True, Neff=Neff)
@@ -563,10 +564,8 @@ def friedmann_solver(a, dir0='', a0=1., h0=h0_ref, OmL0=OmL0_ref, dofs=True, Nef
                 'friedmann/solution#nm_fl.csv' where #nm_fl is the inpute file name
                 The input variables used in the solver are stored in
                 'friedmann/README#nm_fl.csv'
-    
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082,
-    appendix A.
+
+    Reference: HRPB23, appendix A.
     """
     
     Om_tot, Om_rad, Om_mat = Omega_vs_a(a, a0=a0, h0=h0, OmL0=OmL0, dir0=dir0,
@@ -654,14 +653,9 @@ def normalized_variables(a, eta, ap_a, app_a, dir0='', T=Tref, h0=h0_ref):
         eta_n_L -- normalized conformal time at dark energy domination
         eta_n_acc -- normalized conformal time when acceleration starts
         
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082,
-    appendix A.
+    Reference: HRPB23, appendix A.
     
-    The normalization follows that from A. Roper Pol, A. Brandenburg, T. Kahniashvili,
-    A. Kosowsky, S. Mandal, "The timestep constraint in solving the gravitational wave
-    equations sourced by hydromagnetic turbulence," Geophys. Astrophys. Fluid Dynamics 114,
-    1, 130 (2020), arXiv:1807.05479, arXiv:1807.05479.
+    The normalization follows that from RPBKKM20.
     """
 
     g = thermal_g(T=T, s=0, dir0=dir0)
@@ -708,9 +702,7 @@ def ratio_app_a_n_factor(a, dir0='', a0=1, h0=h0_ref, OmL0=OmL0_ref, dofs=True, 
     Function that computes the ratio of a''/a (normalized) to conformal Hubble rate H (normalized)
     times a_*/a_0 using an approximation valid during the RD era.
     
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082,
-    eq. 3.11
+    Reference: HRPB23, eq. 3.11
     
     Arguments:
         a -- array of scale factors

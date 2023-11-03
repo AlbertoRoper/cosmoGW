@@ -9,7 +9,32 @@ for details.
 
 Author: Alberto Roper Pol
 Created: 01/01/2021
-Updated: 20/07/2023 (new release of the cosmoGW code)
+Updated: 01/11/2023 (new release of the cosmoGW code)
+
+Main references are:
+
+RPMBKK20 - A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili, A. Kosowsky,
+"Numerical simulations of gravitational waves from early-universe turbulence,"
+Phys. Rev. D 102, 083512 (2020), arXiv:1903.08585
+
+KBGMRP21 - T. Kahniashvili, A. Brandenburg, G. Gogoberidze, S. Mandal, A. Roper Pol,
+"Circular polarization of gravitational waves from early-universe helical
+turbulence", Phys. Rev. Research 3, 013193 (2021), arxiv:2011.05556
+
+RPMBK22 - A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+"Polarization of gravitational waves from helical MHD turbulent sources,"
+JCAP 04 (2022), 019, arXiv:2107.05356
+
+HRPB21 - Y. He, A. Roper Pol, A. Brandenburg, "Leading-order nonlinear
+gravitational waves from reheating magnetogeneses", arxiv:2110.14456 (2021)
+
+RPCNS22 - A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
+signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
+Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630
+
+HRPB23 - Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
+waves from the early radiation era," JCAP 06 (2023), 025, arXiv:2212.06082
+
 """
 
 def read_dirs(proj, dirs={}, ext=''):
@@ -26,48 +51,39 @@ def read_dirs(proj, dirs={}, ext=''):
 
     The available projects proj are:
 
-        'PRD_1903_08585'  -- runs of A. Roper Pol et al., "Numerical simulations
-                             of gravitational waves from early-universe turbulence",
-                             Phys. Rev. D 102, 083512 (2020), arXiv:1903.08585.
+        'PRD_1903_08585'  -- runs of RPMBKK20
 
-                             The subsets of runs are ext: 'ini' (initially given),
-                             'hel' (helical forced), 'noh' (non-helical forced),
-                             and 'ac' (acoustic turbulence)
+                              The subsets of runs are: 'ini' (initially given),
+                              'hel' (helical forced), 'noh' (non-helical forced),
+                              and 'ac' (acoustic turbulence)
 
-        'PRR_2011_05556'  -- runs of T. Kahniashvili et al., "Circular polarization of
-                             gravitational waves from early-universe helical
-                             turbulence", Phys. Rev. Research 3, 013193 (2021),
-                             arxiv:2011.05556.
+        'PRR_2011_05556'  -- runs of KBGMRP21
 
-                             The subsets of runs are ext: 'K' (kinetic), 'M' (magnetic), and
+                             The subsets of runs are: 'K' (kinetic), 'M' (magnetic), and
                              'nohel'
 
-        'JCAP_2107_05356' -- runs of A. Roper Pol et al., "Polarization of
-                             gravitational waves from helical MHD turbulent sources",
-                             JCAP 04 (2022), 019 (2022), arXiv:2107.05356.
+        'JCAP_2107_05356' -- runs of RPMBK22
 
-                             The subsets of runs are ext: 'ini' (initially given) and
+                             The subsets of runs are: 'ini' (initially given) and
                              'forc' (initially driven).
 
-        'PRD_2110_14456'  -- runs of Y. He et al., "Leading-order nonlinear
-                             gravitational waves from reheating magnetogeneses",
-                             submitted to Phys. Rev. D, arxiv:2110.14456 (2021).
+        'PRD_2110_14456'  -- runs of HRPB21
 
-                             The subsets of runs are ext: 'helical_b27',
+                             The subsets of runs are: 'helical_b27',
                              'helical_b73', 'nonhelical_b27',
                              'nonhelical_b73', and 'helical_b17'
                              for helical and non-helical runs with
                              beta = 1.7, 2.7, and 7.3, and '_toff'
                              for extended runs (up to t = 10).
 
-        'PRD_2201_05630'  -- runs of A. Roper Pol et al., "The gravitational wave
-                             signal from primordial magnetic fields in the Pulsar Timing
-                             Array frequency band," Phys. Rev. D 105, 123502 (2022),
-                             arXiv:2201.05630.
+        'PRD_2201_05630'  -- runs of RPCNS22
 
-        'JCAP_2212_06082' -- runs of Y. He et al., "Modified propagation of gravitational
-                             waves from the early radiation era," in press, JCAP (2023),
-                             arXiv:2212.06082.
+        'JCAP_2212_06082' -- runs of HRPB23
+
+                             The subsets of runs are: 'M0', 'M1', 'M2', 'M3' corresponding
+                             to each of the 0-4 parameterizations of alpM with time.
+                             To choose runs with large domain size, specify '_lowk' after the
+                             corresponding subset of runs.
 
     Returns:
         dirs -- updated dictionary of directories
@@ -76,9 +92,7 @@ def read_dirs(proj, dirs={}, ext=''):
     ########################## PRD_1903_08585 ##################################
     
     '''
-    Reference: A. Roper Pol, A. Brandenburg, T. Kahniashvili, A. Kosowsky, S. Mandal,
-    "Numerical simulations of gravitational waves from early-universe turbulence",
-    Phys. Rev. D 102, 083512 (2020), arXiv:1903.08585
+    Reference for PRD_1903_08585 is RPMBKK20
     
     Zenodo: https://zenodo.org/record/3692072
     '''
@@ -112,9 +126,7 @@ def read_dirs(proj, dirs={}, ext=''):
     ########################## PRR_2011_05556 ##################################
     
     '''
-    Reference: T. Kahniashvili, A. Brandenburg, G. Gogoberidze, S. Mandal,
-    A. Roper Pol, "Circular polarization of gravitational waves from early-universe
-    helical turbulence", Phys. Rev. Research 3, 013193 (2021), arxiv:2011.05556.
+    Reference for PRR_2011_05556 is KBGMRP21
     
     Zenodo: https://zenodo.org/record/4256906
     '''
@@ -150,9 +162,7 @@ def read_dirs(proj, dirs={}, ext=''):
     ########################## JCAP_2107_05356 ################################
     
     '''
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources",
-    JCAP 04 (2022), 019 (2022), arXiv:2107.05356.
+    Reference for JCAP_2107_05356 is RPMBK22
     
     Zenodo: https://zenodo.org/record/5525504
     '''
@@ -179,9 +189,7 @@ def read_dirs(proj, dirs={}, ext=''):
     ########################### PRD_2110_14456 ################################
     
     '''
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Leading-order nonlinear gravitational
-    waves from reheating magnetogeneses," submitted to Phys. Rev. D,
-    arXiv:2110.14456 (2021).
+    Reference for PRD_2110_14456 is HRPB21
     
     Zenodo: https://zenodo.org/record/5603013
     '''
@@ -289,9 +297,7 @@ def read_dirs(proj, dirs={}, ext=''):
     ########################### PRD_2201_05630 ################################
     
     '''
-    Reference: A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
-    signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
-    Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630.
+    Reference for PRD_2201_05630 is RPCNS22
     
     Zenodo: https://zenodo.org/record/5782752
     '''
@@ -314,12 +320,11 @@ def read_dirs(proj, dirs={}, ext=''):
     ########################### JCAP_2212_06082 ################################
     
     '''
-    Reference: Y. He, A. Roper Pol, A. Brandenburg, "Modified propagation of gravitational
-    waves from the early radiation era," in press, JCAP (2023), arXiv:2212.06082.
+    Reference for JCAP_2212_06082 is HRPB23
     
     Zenodo: https://zenodo.org/record/7408601
     '''
-        
+
     if proj == 'JCAP_2212_06082':
 
         if 'M0' in ext or ext=='':

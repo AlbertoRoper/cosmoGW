@@ -20,8 +20,10 @@ If you have any issues, comments, suggestions, or you are just interested in dis
 The main routines of cosmoGW are:
 
 * [**cosmoGW.py**](cosmoGW.py): functions relevant for cosmological stochastic gravitational wave backgrounds (SGWB).
-* [**cosmoMF.py**](cosmoMF.py): functions relevant for cosmological magnetic fields: bounds from different experiments, observations or projected sensitivities, and expectations from theory, among others.
 * [**cosmology.py**](cosmology.py): functions relevant for cosmological calculations, including a Friedmann equations solver (see tutorial on Friedmann equations in [cosmology.ipnyb](cosmology/cosmology.ipynb)) that can generate the solution files being read in some PEncil Code simulations (see tutorial [cosmology_PC.ipnyb](cosmology/cosmology_PC.ipynb)).
+* [**cosmoMF.py**](cosmoMF.py): functions relevant for cosmological magnetic fields: bounds from different experiments, observations or projected sensitivities, and expectations from theory, among others.
+* [**GW_analytical.py**](GW_analytical.py)
+* [**GW_fopt.py**](GW_fopt.py)
 * [**horndeski.py**](horndeski.py): functions relevant for GW production in the context of general theories of modified gravity.
 * [**interferometry.py**](interferometry.py): functions to compute the response and sensitivity functions of interferometer space-based GW detectors (e.g., LISA and Taiji) to the detection of SGWBs (see tutorial on LISA interferometry in [interferometry.ipynb](interferometry/interferometry.ipynb)) energy density and polarization, including the space-based network LISA-Taiji to detect polarization.
 * [**pta.py**](pta.py): functions used in the analysis of observations by pulsar timing array (PTA) collaborations: NANOGrav, PPTA, EPTA, and IPTA.

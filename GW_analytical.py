@@ -39,9 +39,9 @@ a_ref = 4      # Batchelor spectrum k^4
 b_ref = 5/3    # Kolmogorov spectrum k^(-5/3)
 alp_ref = 2
 
-####### ANALYTICAL FUNCTIONS USED FOR A SMOOTHED DOUBLE BROKEN POWER LAW #######
+############### ANALYTICAL FUNCTIONS USED FOR A SMOOTHED BROKEN POWER LAW ###############
 
-def smoothed_bPL(k, A=1, a=a_ref, b=b_ref, alp=alp_ref, kpeak=1, Omega=False):
+def smoothed_bPL(k, A=1, a=a_ref, b=b_ref, alp=alp_ref, norm=True, kpeak=1, Omega=False):
     
     """
     Function that returns the value of the smoothed broken power law (bPL) model
@@ -49,7 +49,13 @@ def smoothed_bPL(k, A=1, a=a_ref, b=b_ref, alp=alp_ref, kpeak=1, Omega=False):
     
         zeta(K) = (b + abs(a))^(1/alp) K^a/[ b + c K^(alp(a + b)) ]^(1/alp),
         
-    where K = k/kpeak, c = 1 if a = 0 or c = abs(a) otherwise.
+    where K = k/kpeak, c = 1 if a = 0 or c = abs(a) otherwise. This spectrum is defined
+    such that kpeak is the correct position of the peak and its maximum amplitude is given
+    by A.
+    
+    If norm is set to Fale, then the non-normalized spectrum is used:
+    
+        zeta (K) = K^a/(1 + K^(alp(a + b)))^(1/alp)
     
     The function is only correctly defined when b > 0 and a + b >= 0
     
@@ -62,12 +68,13 @@ def smoothed_bPL(k, A=1, a=a_ref, b=b_ref, alp=alp_ref, kpeak=1, Omega=False):
         a -- slope of the spectrum at low wave numbers, k^a
         b -- slope of the spectrum at high wave numbers, k^(-b)
         alp -- smoothness of the transition from one power law to the other
+        norm -- option to normalize the spectrum such that its peak is located at
+                kpeak and its maximum value is A
         kpeak -- spectral peak, i.e., position of the break from k^a to k^(-b)
         Omega -- option to use the integrated energy density as the input A
 
     Returns:
         spectrum array
-
     """
     
     if b < max(0, -a):
@@ -76,9 +83,14 @@ def smoothed_bPL(k, A=1, a=a_ref, b=b_ref, alp=alp_ref, kpeak=1, Omega=False):
     
     c = abs(a)
     if a == 0: c = 1
-    m = (b + abs(a))**(1/alp)
-    
-    spec = A*m*(k/kpeak)**a/(b + c*(k/kpeak)**((a+b)*alp))**(1/alp)
+
+    spec = A*(k/kpeak)**a
+    if norm:
+        m = (b + abs(a))**(1/alp)
+        spec = m*spec/(b + c*(k/kpeak)**((a+b)*alp))**(1/alp)
+
+    else: spec = spec/(1 + (k/kpeak)**((a+b)*alp))**(1/alp)
+
     if Omega: spec = spec/kpeak/calA(a=a, b=b, alp=alp)
     
     return spec
@@ -159,11 +171,11 @@ def calA(a=a_ref, b=b_ref, alp=alp_ref):
         b -- slope of the spectrum at high wave numbers, k^(-b)
         alp -- smoothness of the transition from one power law to the other
     '''
-
+    
     return Iabn(alp=alp, a=a, b=b, n=0)
 
 def calC(a=a_ref, b=b_ref, alp=alp_ref, tp='vort'):
-
+    
     '''
     Function that computes the parameter {\cal C} that allows to
     compute the TT-projected stress spectrum by taking the convolution of the
@@ -184,12 +196,53 @@ def calC(a=a_ref, b=b_ref, alp=alp_ref, tp='vort'):
         alp -- smoothness of the transition from one power law to the other
         tp -- type of sourcing field: 'vort' or 'comp' available
     '''
-
+    
     if tp == 'vort': pref = 28/15
     elif tp == 'comp': pref = 32/15
 
     else:
         print('tp has to be vortical (vort) or compressional (comp)')
         pref = 0.
-
+    
     return pref*Iabn(alp=alp/2, a=a*2, b=b*2, n=-2)
+
+############### ANALYTICAL TEMPLATE USED FOR A DOUBLE SMOOTHED BROKEN POWER LAW ###############
+
+def smoothed_double_bPL(k, kpeak1, kpeak2, A=1, a=a_ref, b=1, c=b_ref, alp1=alp_ref, alp2=alp_ref, kref=1.):
+
+    """
+    Function that returns the value of the smoothed double broken power law (double_bPL) model
+    for a spectrum of the form:
+    
+        zeta(K) = K^a/(1 + (K/K1)^[(a - b)*alp1])^(1/alp1)/(1 + (K/K2)^[(c + b)*alp2])^(1/alp2)
+        
+    where K = k/kref, K1 and K2 are the two position peaks, a is the low-k slope, c is the intermediate
+    slope, and -c is the high-k slope. alp1 and alp2 are the smoothness parameters for each spectral
+    transition.
+    
+    Reference is RPPC23, equation 50. Also used in RPNCBS23, equation 7
+
+    Arguments:
+
+        k -- array of wave numbers
+        kpeak1, kpeak2 -- peak positions
+        A -- amplitude of the spectrum
+        a -- slope of the spectrum at low wave numbers, k^a
+        b -- slope of the spectrum at intermediate wave numbers, k^b
+        c -- slope of the spectrum at high wave numbers, k^(-c)
+        alp1, alp2 -- smoothness of the transitions from one power law to the other
+        kref -- reference wave number used to normalize the spectrum (default is 1)
+
+    Returns:
+        spectrum array
+    """
+
+    K = k/kref
+    K1 = k/kref
+    K2 = k/kref
+
+    spec1 = (1 + (K/K1)**((a - b)*alp1))**(1/alp1)
+    spec2 = (1 + (K/K2)**((c + b)*alp2))**(1/alp2)
+    spec = A*K^a/spec1/spec2
+
+    return spec

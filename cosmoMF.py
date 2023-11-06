@@ -118,7 +118,7 @@ def k_to_ll_Mpc(kf, g=gref, T=Tref, kk=True):
 
     return ll
 
-def Alfven_velocity(OmM, cs2=1/3):
+def Alfven_velocity(OmM, cs2=cs2):
     
     """
     Function that computes the Alfvén velocity, following A. Brandenburg, K. Enqvist,

@@ -5,11 +5,25 @@ to the detection of SGWB (see tutorial on interferometry/interferometry.ipynb).
 
 Author: Alberto Roper Pol
 Created: 01/05/2022
-Updated: 05/09/2023 for new release of cosmoGW, included tutorial
+Updated: 01/11/2023 (release of the cosmoGW code, included tutorial)
 
-Main reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
+Main references are:
+
+RPMBK22 - A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
 "Polarization of gravitational waves from helical MHD turbulent sources,"
-JCAP 04 (2022), 019, arXiv:2107.05356, appendix B
+JCAP 04 (2022), 019, arXiv:2107.05356.
+
+Sch20 - K. Schmitz "New Sensitivity Curves for Gravitational-Wave Signals from
+Cosmological Phase Transitions," JHEP 01, 097 (2021), arXiv:2002.04615.
+
+OPR21 - G. Orlando, M. Pieroni, A. Ricciardone, "Measuring Parity Violation
+in the Stochastic Gravitational Wave Background with the LISA-Taiji network,"
+JCAP 03, 069 (2021), arXiv:2011.07059.
+
+CFFNP19 - C. Caprini, D. Figueroa, R. Flauger, G. Nardini, M. Peloso,
+M. Pieroni, A. Ricciardone, G. Tassinato, "Reconstructing the spectral shape
+of a stochastic gravitational wave background with LISA," JCAP 11 (2019), 017,
+arXiv:1906.09244.
 """
 
 import astropy.constants as const
@@ -39,7 +53,7 @@ beta_ref = np.linspace(-20, 20, 3000)
 
 ################## SENSITIVITIES AND NOISE POWER SPECTRAL DENSITY ##################
 
-####### READING FUNCTIONS FROM FILES ON SENSITIVITY
+################### READING FUNCTIONS FROM FILES ON SENSITIVITY ###################
 
 def read_response_LISA_Taiji(dir0=dir0, TDI=True, interf='LISA'):
     
@@ -48,9 +62,7 @@ def read_response_LISA_Taiji(dir0=dir0, TDI=True, interf='LISA'):
     'dir0/LISA_response_f.csv' and 'dir0/Taiji_response_f.csv',
     generated and saved in the routine 'compute_response_LISA_Taiji'.
     
-    TDI chanels are defined following A. Roper Pol, S. Mandal, A. Brandenburg,
-    T. Kahniashvili, "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B.
+    TDI chanels are defined following RPMBK22, appendix B.
     
     Arguments: 
         dir0 -- directory where to save the results (default is 'detector_sensitivity')
@@ -74,7 +86,7 @@ def read_response_LISA_Taiji(dir0=dir0, TDI=True, interf='LISA'):
         MTs = np.array(df['MXY'])
         DAEs = np.array(df['DXY'])
     
-    # Note that for interferometry channels we MA -> MX, MT -> MXY, DAE -> DXY
+    # Note that for interferometry channels we have MA -> MX, MT -> MXY, DAE -> DXY
 
     return fs, MAs, MTs, DAEs
 
@@ -183,9 +195,7 @@ def read_detector_PLIS_Schmitz(dir0=dir0 + '/power-law-integrated_sensitivities/
                                det='BBO', SNR=SNR_PLS, T=T_PLS):
 
     """
-    Read power law integrated senstivities from K. Schmitz "New Sensitivity Curves for
-    Gravitational-Wave Signals from Cosmological Phase Transitions," JHEP 01, 097 (2021),
-    arXiv:2002.04615.
+    Read power law integrated senstivities from reference Sch20.
     
     Arguments:
         dir0 -- directory where the PLS are stored (default is 
@@ -208,22 +218,17 @@ def read_MAC(dir0=dir0 + '/LISA_Taiji/', M='MAC', V='V'):
 
     """
     Function that reads the V response functions of the cross-correlated
-    TDI chanels of the LISA-Taiji network.
+    channels of the LISA-Taiji network.
+
+    Reference is RPMBK22, see figure 18. The data is taken from  OPR21, see figure 2.
 
     Argument:
         dir0 -- directory where to save the results (default is
                 'detector_sensitivity/LISA_Taiji/')
         M -- string of the channels to be read (options are default 'MAC',
              'MAD', 'MEC', 'MED')
-        V -- can be changed to read the 'I' response function (default 'V')
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, figure 18.
-    
-    The data is taken from  G. Orlando, M. Pieroni, A. Ricciardone, "Measuring Parity Violation
-    in the Stochastic Gravitational Wave Background with the LISA-Taiji network,"
-    JCAP 03, 069 (2021), arXiv:2011.07059, Figure 2.
+        V -- Stokes parameter. It can be changed to read the 'I' response
+             function (default 'V')
     """
 
     df = pd.read_csv(dir0 + M + '_' + V + '.csv')
@@ -242,15 +247,13 @@ def read_all_MAC(V='V'):
     Function that reads all relevant TDI cross-correlated response functions between LISA
     and Taiji (AC, AD, EC, ED channels) using read_MAC.
     
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, figure 18.
+    Reference is RPMBK22, see figure 18. The data is taken from  OPR21, see figure 2.
     
-    The data is taken from  G. Orlando, M. Pieroni, A. Ricciardone, "Measuring Parity Violation
-    in the Stochastic Gravitational Wave Background with the LISA-Taiji network,"
-    JCAP 03, 069 (2021), arXiv:2011.07059, Figure 2.
+    Argument:
+         V -- Stokes parameter. It can be changed to read the 'I' response
+             function (default 'V')
     """
-    
+
     f_AC, M_AC = read_MAC(M='MAC', V=V)
     f_AD, M_AD = read_MAC(M='MAD', V=V)
     f_EC, M_EC = read_MAC(M='MEC', V=V)
@@ -273,7 +276,9 @@ def Poms_f(f=f_ref, P=P_LISA, L=L_LISA):
 
     """
     Function that computes the power spectral density (PSD) of the optical
-    metrology system noise.
+    metrology system (oms) noise.
+    
+    Reference is RPMBK22, equation B.24.
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -283,10 +288,6 @@ def Poms_f(f=f_ref, P=P_LISA, L=L_LISA):
 
     Returns:
         Poms -- oms PSD noise
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.24
     """
 
     f_mHz = f.to(u.mHz)
@@ -300,6 +301,8 @@ def Pacc_f(f=f_ref, A=A_LISA, L=L_LISA):
     """
     Function that computes the power spectral density (PSD) of the mass
     acceleration noise.
+    
+    Reference is RPMBK22, equation B.25.
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -309,10 +312,6 @@ def Pacc_f(f=f_ref, A=A_LISA, L=L_LISA):
 
     Returns:
         Pacc -- mass acceleration PSD noise
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.25
     """
 
     f_mHz = f.to(u.mHz)
@@ -334,9 +333,10 @@ def Pn_f(f=f_ref, P=P_LISA, A=A_LISA, L=L_LISA, TDI=True):
     """
     Function that computes the noise power spectral density (PSD) of an
     interferometer channel X, Pn(f), and of the cross-correlation of two
-    different interferometer channels XY, Pn_cross(f).
-    
-    It gives the A and T PSD of the TDI chanels if TDI is True (default)
+    different interferometer channels XY, Pn_cross(f). It gives the A and
+    T PSD of the TDI chanels if TDI is True (default)
+
+    Reference is RPMBK22, equations B.23 and B.26.
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -344,16 +344,10 @@ def Pn_f(f=f_ref, P=P_LISA, A=A_LISA, L=L_LISA, TDI=True):
         A -- noise parameter (default 3 for LISA)
         L -- length of the interferometer arm (default is L = 2.5e6 km for LISA,
              otherwise should be in units of km)
-        TDI -- option to compute PSD of TDI chanels, instead of XYZ
-               chanels (default True)
 
     Returns:
-        Pn -- noise PSD
-        Pn_cross -- cross-correlation noise PSD (only if not TDI)
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.23, B.26 and B.27
+        Pn (noise PSD) and Pn_cross (cross-correlation noise PSD) if TDI is False,
+            or PnA and PnT (noise PSD of the TDI channels A and T) if TDI is True
     """
 
     Poms = Poms_f(f=f, P=P, L=L)
@@ -364,7 +358,7 @@ def Pn_f(f=f_ref, P=P_LISA, A=A_LISA, L=L_LISA, TDI=True):
 
     Pn = Poms + (3 + np.cos(2*f_f0.value))*Pacc
     Pn_cross = -.5*np.cos(f_f0.value)*(Poms + 4*Pacc)
-    
+
     if TDI: 
         PnA = 2*(Pn - Pn_cross)/3
         PnT = (Pn + 2*Pn_cross)/3
@@ -381,6 +375,8 @@ def R_f(f=f_ref, L=L_LISA):
 
     """
     Function that computes the analytical fit of the response function.
+    
+    Reference is RPMBK22, equation B.15.
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -389,10 +385,6 @@ def R_f(f=f_ref, L=L_LISA):
 
     Returns:
         Rf -- response function (using analytical fit)
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.15
     """
 
     c = const.c
@@ -424,7 +416,7 @@ def Sn_f_analytical(f=f_ref, P=P_LISA, A=A_LISA, L=L_LISA):
 
     return Pn/Rf
 
-###### NUMERICAL COMPUTATION OF RESPONSE FUNCTIONS
+######################## NUMERICAL COMPUTATION OF RESPONSE FUNCTIONS ########################
 
 def delta(a, b):
 
@@ -443,6 +435,8 @@ def compute_interferometry(f=f_ref, L=L_LISA, TDI=True, order=1, comp_all=False,
     Function that computes numerically the monopole (or dipole if order = 2)
     response functions of an interferometer channel of a space-based GW detector
     using the interferometer channels (or TDI channels if TDI is True).
+    
+    Reference is RPMBK22, appendix B (in particular, equations B.13 and B.16).
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -467,11 +461,6 @@ def compute_interferometry(f=f_ref, L=L_LISA, TDI=True, order=1, comp_all=False,
         if comp_all, then returns all: MAA, MEE, MTT, MAE, MAT, MET, DAA, DEE, DTT, DAE, DAT, DET,
                MXX, MYY, MZZ, MXY, MXZ, MYZ, DXX, DYY, DZZ, DXY, DXZ, DYZ
         if comp_all_rel, then returns: MAA, MTT, MXX, MXY, DAE, DXY
-               
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B (in particular, eq. B.13
-    and B.16)
     """
     
     if comp_all_rel: comp_all = True
@@ -596,7 +585,7 @@ def compute_interferometry(f=f_ref, L=L_LISA, TDI=True, order=1, comp_all=False,
             FZZ = np.zeros((len(kL), len(theta), len(phi)))*1j
             FXZ = np.zeros((len(kL), len(theta), len(phi)))*1j
             FYZ = np.zeros((len(kL), len(theta), len(phi)))*1j
-
+            
     for a in range(0, 3):
         for b in range(0, 3):
             for c in range(0, 3):
@@ -872,6 +861,20 @@ def Oms(f, S, h0=1., comb=False, S2=[], S3=[], S4=[], Xi=False):
 
     """
     Function that returns the sensitivity Sh(f) in terms of the GW energy density Om(f)
+    
+    Reference for Omega is RPMBK21, equation B.18 (seems like it might have
+    a typo, need to investigate this!). Final PLS sensitivites are again correct
+    for a single chanel, since the factor of 2 in the SNR compensates for the
+    1/2 factor here.
+    
+    Reference of Xi is RPMBK21, equation B.21.
+
+    Reference for combined sensitivities is RPMBK21, equations B.37 (GW energy density,
+    combining LISA and Taiji TDI channels A and C), and B.41 (polarization, combining
+    4 cross-correlation between LISA and Taiji TDI channels AE, AD, CE, CD).
+    
+    Strain sensitivities, Omega sensitivities, and OmGW PLS agree with those of reference
+    CFFNP19, see equation 2.14.
 
     Arguments:
         f -- frequency array (should be in units of Hz)
@@ -887,34 +890,9 @@ def Oms(f, S, h0=1., comb=False, S2=[], S3=[], S4=[], Xi=False):
 
     Returns:
         Omega -- GW energy density sensitivity
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.18 (seems like it might have
-    a typo, need to investigate this!). Final PLS sensitivites are again correct
-    for a single chanel, since the factor of 2 in the SNR compensates for the
-    1/2 factor here.
-    
-    For Xi, the GW energy density sensitivity is given in A. Roper Pol, S. Mandal,
-    A. Brandenburg, T. Kahniashvili, "Polarization of gravitational waves from helical
-    MHD turbulent sources," JCAP 04 (2022), 019, arXiv:2107.05356, eq. B.21
-    
-    For combined sensitivities, the GW energy density sensitivity is given in A. Roper Pol,
-    S. Mandal, A. Brandenburg, T. Kahniashvili, "Polarization of gravitational waves from helical
-    MHD turbulent sources," JCAP 04 (2022), 019, arXiv:2107.05356, eqs. B.37 (GW energy density,
-    combining LISA and Taiji TDI channels A and C) and B.41 (polarization, combining 4 cross-correlation
-    between LISA and Taiji TDI channels AE, AD, CE, CD)
-    
-    Strain sensitivities, Omega sensitivities, and OmGW PLS have been compared to those of the ref.
-    below and agree.
-    
-    Reference: C. Caprini, D. Figueroa, R. Flauger, G. Nardini, M. Peloso,
-    M. Pieroni, A. Ricciardone, G. Tassinato, "Reconstructing the spectral shape
-    of a stochastic gravitational wave background with LISA," JCAP 11 (2019), 017,
-    arXiv:1906.09244, eq. 2.14
     """
 
-    H0 = co.H0_ref           # reference value of H0 from cosmology (100 km/s/Mpc)
+    H0 = co.H0_ref*h0           # reference value of H0 from cosmology (100 km/s/Mpc)
     #A = 8*np.pi**2/3/H0**2
     # corrected factor (to be checked!!)
     A = 4*np.pi**2/3/H0**2
@@ -947,21 +925,22 @@ def compute_Oms_LISA_Taiji(interf='LISA', TDI=True, h0=1.):
          TDI -- option to read the response functions for TDI chanels, instead of XYZ
                 chanels (default True)
     """
-    
+
     # read LISA and Taiji strain sensitivities Sn_f(f)
     fs, SnA, SnT = Sn_f(interf=interf, TDI=TDI)
-    
+
     # Sn is the sensitivity of the channel A (if TDI) or X (if not TDI) for LISA or 
     # Taiji (depending on what is interf)
     OmSA = Oms(fs, SnA, h0=h0, comb=False, Xi=False)
     OmST = Oms(fs, SnT, h0=h0, comb=False, Xi=False)
-    
+
     return fs, OmSA, OmST
 
 def OmPLS(Oms, f=f_ref, beta=beta_ref, SNR=1, T=1, Xi=0):
 
     """
     Function that computes the power law sensitivity (PLS).
+    Reference is RPMBK21, appendix B (equation B.31).
 
     Arguments:
         Oms -- GW energy density sensitivity
@@ -975,10 +954,6 @@ def OmPLS(Oms, f=f_ref, beta=beta_ref, SNR=1, T=1, Xi=0):
 
     Returns:
         Omega -- GW energy density power law sensitivity (PLS)
-        
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B (eq. B31)
     """
 
     Cbeta = np.zeros(len(beta))
@@ -1004,6 +979,8 @@ def SNR(f, OmGW, fs, Oms, T=1.):
     Function that computes the signal-to-noise ratio (SNR) of a GW signal as
 
     SNR = 2 \sqrt(T \int (OmGW/Oms)^2 df)
+    
+    Reference is RPMBK21, appenix B (equation B.30).
 
     Arguments:
         f -- frequency array of the GW signal
@@ -1014,10 +991,6 @@ def SNR(f, OmGW, fs, Oms, T=1.):
 
     Returns:
         SNR -- SNR of the GW signal
-
-    Reference: A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
-    "Polarization of gravitational waves from helical MHD turbulent sources,"
-    JCAP 04 (2022), 019, arXiv:2107.05356, appendix B (eq. B30)
     """
 
     T = T*u.yr

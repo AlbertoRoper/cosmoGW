@@ -24,8 +24,8 @@ The main routines of cosmoGW are:
 * [**cosmoMF.py**](cosmoMF.py): functions relevant for cosmological magnetic fields: bounds from different experiments, observations or projected sensitivities, and expectations from theory, among others.
 * [**GW_analytical.py**](GW_analytical.py)
 * [**GW_fopt.py**](GW_fopt.py)
-* [**horndeski.py**](horndeski.py): functions relevant for GW production in the context of general theories of modified gravity.
 * [**interferometry.py**](interferometry.py): functions to compute the response and sensitivity functions of interferometer space-based GW detectors (e.g., LISA and Taiji) to the detection of SGWBs (see tutorial on LISA interferometry in [interferometry.ipynb](interferometry/interferometry.ipynb)) energy density and polarization, including the space-based network LISA-Taiji to detect polarization.
+* [**modified_grav.py**](modified_grav.py): functions relevant for GW production in the context of general theories of modified gravity.
 * [**pta.py**](pta.py): functions used in the analysis of observations by pulsar timing array (PTA) collaborations: NANOGrav, PPTA, EPTA, and IPTA.
 * [**reading.py**](reading.py): functions to read the output files of a specific set of runs (project) of the Pencil Code.
 * [**run.py**](run.py): contains the class **run**, used to store all the variables computed in the Pencil Code and in cosmoGW from the Pencil Code solitions. It includes functions to initialize and postprocess the results of a set of runs.

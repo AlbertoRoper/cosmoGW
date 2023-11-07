@@ -19,6 +19,7 @@ If you have any issues, comments, suggestions, or you are just interested in dis
 
 The main routines of cosmoGW are:
 
+* [**analysis.py**](analysis.py): 
 * [**cosmoGW.py**](cosmoGW.py): functions relevant for cosmological stochastic gravitational wave backgrounds (SGWB).
 * [**cosmology.py**](cosmology.py): functions relevant for cosmological calculations, including a Friedmann equations solver (see tutorial on Friedmann equations in [cosmology.ipnyb](cosmology/cosmology.ipynb)) that can generate the solution files being read in some PEncil Code simulations (see tutorial [cosmology_PC.ipnyb](cosmology/cosmology_PC.ipynb)).
 * [**cosmoMF.py**](cosmoMF.py): functions relevant for cosmological magnetic fields: bounds from different experiments, observations or projected sensitivities, and expectations from theory, among others.

@@ -4,7 +4,7 @@ postprocessing routines for numerical spectra, and other mathematical routines.
 
 Author: Alberto Roper Pol
 Created: 01/01/2021
-Updated: 20/07/2023 (release of the cosmoGW code)
+Updated: 01/11/2023 (release of the cosmoGW code)
 """
 
 import numpy as np

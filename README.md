@@ -1,5 +1,5 @@
 * Author: Alberto Roper Pol (alberto.roperpol@unige.ch)
-* Created: 19/07/2023
+* Created: 19 Jul. 2023 (original GW_turbulence is from Nov. 2021)
 * Latest stable release: 10 Nov. 2023
 
 cosmoGW (a continuation and update of [*GW_turbulence*](https://github.com/AlbertoRoper/GW_turbulence)) is a project to produce results related to the production of cosmological gravitational wave backgrounds from different sources in the early Universe (e.g., from MHD turbulence).

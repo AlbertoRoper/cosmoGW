@@ -1,12 +1,10 @@
 """
 plot_sets.py is a Python routine that includes some of the settings used in the
-generation of plots and contains functions to generate the plots on the
-different projects of Pencil Code simulations of gravitational waves
-from sources in the early universe (see https://github.com/AlbertoRoper/cosmoGW).
+generation of plots for the cosmoGW project (see https://github.com/AlbertoRoper/cosmoGW).
 
 Author: Alberto Roper Pol
 Created: 01/01/2021
-Updated: 20/07/2023 (release of the cosmoGW code)
+Updated: 01/11/2023 (release of the cosmoGW code)
 """
 
 import matplotlib.pyplot as plt

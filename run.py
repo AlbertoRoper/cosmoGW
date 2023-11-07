@@ -13,7 +13,7 @@ for details.
 
 Author: Alberto Roper Pol
 Created: 01/01/2021
-Updated: 20/07/2023 (release of the cosmoGW code)
+Updated: 01/11/2023 (release of the cosmoGW code)
 """
 
 import os
@@ -651,6 +651,14 @@ class run():
                 EE = self.spectra.get(sp)
                 hel_EE = self.spectra.get(sp_hel)
                 t = self.spectra.get('t_' + sp_hel)
+                t2 = self.spectra.get('t_' + sp)
+                if len(t) != len(t2):
+                    print('spectrum ', sp, ' and ', sp_hel, ' of run ', self.name_run, 'do not have same number of',
+                          ' data points in time')
+                    inds = range(0, min(len(t), len(t2)))
+                    EE = EE[inds, :]
+                    hel_EE = hel_EE[inds, :]
+                    t = t[inds]
                 Ak = A
                 if exp != 0:
                     k = self.spectra.get('k')
@@ -658,7 +666,8 @@ class run():
                     Ak *= kij**exp
                     Ak[kij == 0] = 1e-20
                 PP = np.zeros((np.shape(EE)))
-                PP[EE != 0] = Ak*hel_EE[EE != 0]/EE[EE != 0]
+                inds = np.where(EE != 0)[0]
+                PP[inds] = Ak*hel_EE[inds]/EE[inds]
                 self.spectra.update({P_sp: PP})
                 self.spectra.update({'t_' + P_sp: t})
                 self.spectra_avail.append(P_sp)

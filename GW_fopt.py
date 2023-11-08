@@ -193,7 +193,7 @@ def Oms_alpha(alpha, xiw=1., cs2=cs2, multi=False, eps=1):
     
     return K*eps
 
-def beta_Rs(beta, xiw=1, cs2=cs2, multi=False):
+def beta_Rs(beta, xiw=1, cs2=cs2, multi=False, corr=True):
     
     """
     Function that computes the characteristic size of bubbles from the
@@ -209,6 +209,7 @@ def beta_Rs(beta, xiw=1, cs2=cs2, multi=False):
         xiw -- value of the wall velocity (default is 1)
         cs2 -- square of the speed of sound (default is 1/3)
         multi -- option to give an array of beta and xiw (default is False)
+        corr -- option to correct mean-size of the bubbles at low xiw by cs
         
     Returns:
         Rs -- mean-size of the bubbles after percolation
@@ -216,7 +217,10 @@ def beta_Rs(beta, xiw=1, cs2=cs2, multi=False):
     
     cs = np.sqrt(cs2)
     if multi: beta, vw = np.meshgrid(beta, xiw, indexing='ij')
-    Rs = (8*np.pi)**(1/3)*np.maximum(xiw, cs)/beta
+    if corr:
+        Rs = (8*np.pi)**(1/3)*np.maximum(xiw, cs)/beta
+    else:
+        Rs = (8*np.pi)**(1/3)*xiw/beta
     
     return Rs
 
@@ -375,7 +379,7 @@ def pPi_fit(s, b=b_turb, alpPi=alpPi, fPi=fPi):
 
     Pi = (1 + (s/fPi)**alpPi)**(-(b + 2)/alpPi)
     pimax = ((b + 2)/(b + 1))**(-(b + 2)/alpPi)
-    fGW = fPi*/(b + 1)**(1/alpPi)
+    fGW = fPi/(b + 1)**(1/alpPi)
 
     return Pi, fGW, pimax
 
@@ -519,7 +523,7 @@ def Sf_shape(s, tp='turb', Dw=1, a_sw=a_sw, b_sw=b_sw, c_sw=c_sw, alp1_sw=alp1_s
 def OmGW_spec(ss, alpha, beta, xiw=1., tp='turb', cs2=cs2, multi_ab=False, multi_xi=False,
               Omgwtilde_sw=Omgwtilde_sw, a_sw=a_sw, b_sw=b_sw, c_sw=c_sw, alp1_sw=alp1_sw, alp2_sw=alp2_sw,
               a_turb=a_turb, b_turb=b_turb, alp_turb=alp_turb, alpPi=alpPi, fPi=fPi,
-              eps_turb=1., ref='f')
+              eps_turb=1., ref='f'):
     
     '''
     Function that computes the GW spectrum (normalized to radiation energy density within RD

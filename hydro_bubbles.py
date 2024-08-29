@@ -831,3 +831,13 @@ def kappas_from_prof(vw, alpha, xis, ws, vs, more=False, cs2=cs2, sw=False):
     omega = 3/vw**3/alpha*np.trapz(xis**2*(ws - 1), xis)
 
     return kappa, omega
+
+######################### COMPUTING DIAGNOSTIC PROFILES #########################
+    
+def w_to_lam(xis, ws, vw, alpha_n):
+    
+    inds = np.where(xis < vw)[0]
+    lam = 3/4*(ws - 1)
+    lam[inds] -= 3/4*alpha_n
+    
+    return lam

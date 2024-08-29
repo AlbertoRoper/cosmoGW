@@ -816,3 +816,18 @@ def compute_profiles_vws(alpha, vws=[], cs2=cs2, Nvws=20, Nxi=10000, Nxi2=10000,
         return xis, vvs, wws, alphas_n, conv, shocks, xi_shocks, wms, kappas, omegas
     else:
         return xis, vvs, wws, alphas_n, conv, shocks, xi_shocks, wms
+
+
+################### COMPUTING EFFICIENCIES FROM 1D PROFILES ###################
+
+def kappas_from_prof(vw, alpha, xis, ws, vs, more=False, cs2=cs2, sw=False):
+
+    '''
+    Function that computes the kinetic energy density efficiency kappa
+    and thermal factor omega from the 1d profiles.
+    '''
+
+    kappa = 4/vw**3/alpha*np.trapz(xis**2*ws/(1 - vs**2)*vs**2, xis)
+    omega = 3/vw**3/alpha*np.trapz(xis**2*(ws - 1), xis)
+
+    return kappa, omega

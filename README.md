@@ -38,9 +38,11 @@ Some data files are available in cosmoGW that are useful in some of the projects
 * [**interferometry**](interferometry): includes files relevant for space-based GW interferometry calculations and contains a tutorial on computing the response functions, sensitivities and power law sensitivities to SGWB energy density and polarization.
 * [**detector_sensitivity**](detector_sensitivity): includes the sensitivity of various detectors (ground-based, space-based, and pulsar timing arrays, among others), see the [README](detector_sensitivity/README.md) file for info and references.
 
-## Projects (out of date, will be updated soon, stay tuned)
+## Projects
 
 * [**GWs_from_PTs**](projects/GWs_from_PTs): contains tutorials related to the production of GWs (self-similar profiles calculation for now, but more coming soon!)
+
+## Projects (out of date, will be updated soon, stay tuned)
 
 Each specific project is contained in a separate directory and (usually) corresponds to a publication. They all include a Jupyter notebook that allows to reproduce the results and plots of the publication. Note that (obviously) there are other authors involved in most of the collected projects so I am not the only one to credit when using these results! The Python routine [dirs.py](dirs.py) returns a dictionary linking common names of the run to their specific directories. The dictionary can be used to directly read the simulations of a specific project (see Jupyter notebooks contained in each project directory).
 

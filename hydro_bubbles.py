@@ -817,7 +817,6 @@ def compute_profiles_vws(alpha, vws=[], cs2=cs2, Nvws=20, Nxi=10000, Nxi2=10000,
     else:
         return xis, vvs, wws, alphas_n, conv, shocks, xi_shocks, wms
 
-
 ################### COMPUTING EFFICIENCIES FROM 1D PROFILES ###################
 
 def kappas_from_prof(vw, alpha, xis, ws, vs, more=False, cs2=cs2, sw=False):
@@ -841,3 +840,59 @@ def w_to_lam(xis, ws, vw, alpha_n):
     lam[inds] -= 3/4*alpha_n
     
     return lam
+
+########## COMPUTING FUNCTIONS RELEVANT FOR VELOCITY SPECTRAL DENSITY ##########
+
+'''
+Main reference is: RPPMC24
+Other used references are: H16, HH19, RPPC23
+'''
+
+#### f' and l functions
+    
+def fp_z(xi, vs, z, ls=[], multi=True, quiet=False, lz=False, gpz=False):
+    
+    '''
+    Function that computes the functions f'(z) and l(z) that appears in the Fourier
+    transform of the velocity and enthalpy perturbations fields of an expanding bubble.
+    '''
+
+    xi_ij, z_ij = np.meshgrid(xi[1:], z, indexing='ij')
+    zxi_ij = z_ij*xi_ij
+    j1_z = np.sin(zxi_ij)/zxi_ij**2 - np.cos(zxi_ij)/zxi_ij
+    # avoid division by zero
+    j1_z[np.where(zxi_ij == 0)] = 0
+
+    if lz:
+        if ls == []:
+            print('if lz is chosen you need to provide a l(xi) profile')
+            lz = False
+        j0_z = np.sin(zxi_ij)/zxi_ij
+        j0_z[np.where(zxi_ij == 0)] = 1
+
+    if multi:
+        Nvws = np.shape(vs)[0]
+        fpzs = np.zeros((Nvws, len(z)))
+        if lz: lzs = np.zeros((Nvws, len(z)))
+
+        for i in range(0, Nvws):
+            v_ij, z_ij = np.meshgrid(vs[i, 1:], z, indexing='ij')
+            fpzs[i, :] = -4*np.pi*np.trapz(j1_z*xi_ij**2*v_ij, xi[1:], axis=0)
+            if lz:
+                l_ij, z_ij = np.meshgrid(ls[i, 1:], z, indexing='ij')
+                lzs[i, :] = 4*np.pi*np.trapz(j0_z*xi_ij**2*l_ij, xi[1:], axis=0)
+                
+            if not quiet: print('vw ', i + 1, '/', Nvws, ' computed')
+
+    else:
+
+        v_ij, z_ij = np.meshgrid(vs[1:], z, indexing='ij')
+        fpzs = -4*np.pi*np.trapz(j1_z*xi_ij**2*v_ij, xi[1:], axis=0)
+        if lz:
+            l_ij, z_ij = np.meshgrid(ls[1:], z, indexing='ij')
+            lzs = 4*np.pi*np.trapz(j0_z*xi_ij**2*l_ij, xi[1:], axis=0)
+
+    if lz:
+        return fpzs, lzs
+    else:
+        return fpzs

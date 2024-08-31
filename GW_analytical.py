@@ -1,12 +1,12 @@
 """
 GW_analytical.py is a Python routine that contains analytical
-calculations relative to GW backgrounds produced by MHD turbulence
-and sound waves in the early Universe. It also includes some useful mathematical
-functions.
+calculations and useful mathematical functions.
 
 Author: Alberto Roper Pol
 Created: 01/12/2021
-Updated: 01/11/2023 (release of the cosmoGW code)
+Updated: 31/08/2024
+
+Other contributors: Antonino Midiri, Simona Procacci
 
 Main references are:
 
@@ -19,9 +19,6 @@ multi-messenger probes of a first-order cosmological phase transition," arXiv:23
 
 RPPC23 - A. Roper Pol, S. Procacci, C. Caprini, "Characterization of the gravitational wave spectrum
 from sound waves within the sound shell model," arXiv:2308.12943
-
-RPCM23 - A. Roper Pol, C. Caprini, A. S. Midiri, "Gravitational wave spectrum from slowly
-evolving sources: constant-in-time model," arXiv:23xx.xxxxx (2023)
 """
 
 import numpy as np

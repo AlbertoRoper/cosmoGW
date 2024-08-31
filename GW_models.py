@@ -17,7 +17,7 @@ RPNCBS23 - A. Roper Pol, A. Neronov, C. Caprini, T. Boyer, D. Semikoz, "LISA and
 multi-messenger probes of a first-order cosmological phase transition," arXiv:2307.10744 (2023)
 
 RPPC23 - A. Roper Pol, S. Procacci, C. Caprini, "Characterization of the gravitational wave spectrum
-from sound waves within the sound shell model," arXiv:2308.12943
+from sound waves within the sound shell model," Phys.Rev.D 109 (2024) 6, 063531, arXiv:2308.12943
 
 HH19 - M. Hindmarsh, M. Hijazi, "Gravitational waves from first order
 cosmological phase transitions in the Sound Shell Model,"

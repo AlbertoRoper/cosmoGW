@@ -4,12 +4,17 @@ cosmological stochastic gravitational wave backgrounds (SGWB).
 
 Author: Alberto Roper Pol
 Created: 01/12/2021
-Updated: 01/11/2023 (release of the cosmoGW code)
+Updated: 31/08/2024
 
 Main references are:
 
 Magg00 - M. Maggiore, "Gravitational wave experiments and
 early universe cosmology," Phys.Rept. 331 (2000) 283-367, arXiv:gr-qc/9909001.
+
+RPBKKM20 - A. Roper Pol, A. Brandenburg, T. Kahniashvili, A. Kosowsky, S. Mandal,
+"The timestep constraint in solving the gravitational wave equations sourced by
+hydromagnetic turbulence," Geophys. Astrophys. Fluid Dynamics 114, 1, 130 (2020)
+arXiv:1807.05479.
 
 RPMBK22 - A. Roper Pol, S. Mandal, A. Brandenburg, T. Kahniashvili,
 "Polarization of gravitational waves from helical MHD turbulent sources,"
@@ -18,11 +23,6 @@ JCAP 04 (2022), 019, arXiv:2107.05356.
 RPCNS22 - A. Roper Pol, C. Caprini, A. Neronov, D. Semikoz, "The gravitational wave
 signal from primordial magnetic fields in the Pulsar Timing Array frequency band,"
 Phys. Rev. D 105, 123502 (2022), arXiv:2201.05630.
-
-RPBKKM20 - A. Roper Pol, A. Brandenburg, T. Kahniashvili, A. Kosowsky, S. Mandal,
-"The timestep constraint in solving the gravitational wave equations sourced by
-hydromagnetic turbulence," Geophys. Astrophys. Fluid Dynamics 114, 1, 130 (2020)
-arXiv:1807.05479.
 """
 
 import astropy.constants as const

@@ -76,7 +76,7 @@ def compute_kin_spec_dens(z, vws, fp, l, sp='sum', type_n='exp', cs2=cs2, min_qb
 
     return q_beta, Pv
 
-def compute_kin_spec(vws, q_beta, Pv, corr=True, cs2=cs2):
+def compute_kin_spec(vws, q_beta, Pv, corr=False, cs2=cs2):
     
     '''
     Function that computes the kinetic spectrum as a function of k Rast from
